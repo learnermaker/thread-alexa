@@ -1,0 +1,8 @@
+{"hasApp":true,"toolName":"create_thread","resourceUri":"ui://thread/lens","resourceMimeType":"text/html;profile=mcp-app"}
+{"hasApp":true,"toolName":"list_threads","resourceUri":"ui://thread/lens","resourceMimeType":"text/html;profile=mcp-app"}
+{"hasApp":true,"toolName":"get_thread","resourceUri":"ui://thread/lens","resourceMimeType":"text/html;profile=mcp-app"}
+{"hasApp":true,"toolName":"report_change","resourceUri":"ui://thread/lens","resourceMimeType":"text/html;profile=mcp-app"}
+{"hasApp":true,"toolName":"request_handoff","resourceUri":"ui://thread/lens","resourceMimeType":"text/html;profile=mcp-app"}
+{"hasApp":true,"toolName":"respond_to_handoff","resourceUri":"ui://thread/lens","resourceMimeType":"text/html;profile=mcp-app"}
+{"hasApp":true,"toolName":"record_evidence","resourceUri":"ui://thread/lens","resourceMimeType":"text/html;profile=mcp-app"}
+{"hasApp":true,"toolName":"confirm_action","resourceUri":"ui://thread/lens","resourceMimeType":"text/html;profile=mcp-app"}
