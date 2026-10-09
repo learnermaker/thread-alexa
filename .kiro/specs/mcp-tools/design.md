@@ -5,7 +5,7 @@
 
 ## Architecture
 ```text
-MCP client (simulator agent / MCP Inspector / Claude)
+MCP client (simulator agent / MCP Inspector / other MCP hosts)
    │ POST /mcp  Authorization: Bearer <token>        (stateless Streamable HTTP, JSON responses)
    ▼
 buildHttpApp ── resolvePrincipal(token) ──401 (no WWW-Authenticate) if missing/invalid

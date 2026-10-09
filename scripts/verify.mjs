@@ -5,6 +5,7 @@ const steps = [
   ["contract checksums", "node scripts/check-contract.mjs"],
   ["dependency allowlist", "node scripts/check-deps.mjs"],
   ["secret scan", "node scripts/check-secrets.mjs"],
+  ["wording", "node scripts/check-wording.mjs"],
   ["typecheck", "npx tsc --noEmit"],
   ["tests", "npx vitest run"],
 ];
