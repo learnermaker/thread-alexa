@@ -12,5 +12,5 @@
     "isolatedModules": true,
     "types": ["react", "react-dom"]
   },
-  "include": ["lens/src", "lens/vite.config.ts"]
+  "include": ["lens/src", "lens/vite.config.ts", "sim/src", "sim/vite.config.ts"]
 }

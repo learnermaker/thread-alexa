@@ -36,6 +36,6 @@ Demo connectors, watcher, clock/inbox/reset/log APIs, story file, tests. Wire in
     - _Requirements: 1, 2, 3_
 
 - [ ] 5. Verify and commit
-  - [ ] 5.1 `npm run verify` → VERIFY PASSED  (BLOCKED: shared worktree holds non-compiling Phase 3/5 WIP; see BLOCKED.md. My files pass in isolation.)
+  - [x] 5.1 `npm run verify` → VERIFY PASSED (green across the whole tree once parallel Phase 5 committed; see BLOCKED.md)
   - [x] 5.2 Scoped commit of Phase 2 files only (NOT `git add -A`): `feat(world): demo connectors, clock, watcher, story.json`
   - [ ] 5.3 `git push`

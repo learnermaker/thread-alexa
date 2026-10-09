@@ -58,10 +58,19 @@ const lensHtml = async () => {
     return "<!doctype html><title>Thread Lens</title><p>Lens not built yet. Run `npm run build:lens`.</p>";
   }
 };
+const simPath = new URL("../web/dist/index.html", import.meta.url);
+const simHtml = async () => {
+  try {
+    return readFileSync(simPath, "utf8");
+  } catch {
+    return "<!doctype html><title>Alexa+ experience simulator</title><p>Simulator not built yet. Run `npm run build:sim`.</p>";
+  }
+};
 const app = buildHttpApp({
   core,
   oauth,
   lensHtml,
+  simHtml,
   resolvePrincipal: devTokens ? anyOf(jwtResolver(oauth), devResolver(seed.household.id, persons.map((p: { id: string }) => p.id))) : jwtResolver(oauth),
   onCall: (e) => { calls.push(e); if (calls.length > 200) calls.splice(0, calls.length - 200); },
 });
@@ -76,6 +85,8 @@ const PRESETS: Record<string, string> = {
 };
 
 app.get("/api/clock", (c) => c.json({ iso: clock.now(), presets: Object.keys(PRESETS) }));
+
+app.get("/api/household", (c) => c.json({ household_id: seed.household.id, persons }));
 
 app.post("/api/clock", async (c) => {
   const body = await c.req.json<{ preset?: string; iso?: string }>();

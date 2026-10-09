@@ -9,6 +9,7 @@ import { oauthRoutes, type OAuthConfig } from "./auth/oauth.ts";
 export interface AppDeps extends McpDeps {
   resolvePrincipal: ResolvePrincipal;
   oauth?: OAuthConfig; // when set, the embedded authorization server is mounted
+  simHtml?: () => Promise<string>; // when set, the simulator SPA is served at "/" and the Lens at "/lens"
 }
 
 // JSON-RPC methods a Tier 1 (service) token may call. Everything else needs a Tier 2 person token.
@@ -18,6 +19,12 @@ export function buildHttpApp(deps: AppDeps): Hono {
   const app = new Hono();
   app.get("/health", (c) => c.json({ ok: true, protocol: "2025-11-25" }));
   if (deps.oauth) oauthRoutes(app, deps.oauth);
+  if (deps.simHtml) {
+    // The simulator SPA at "/" and the Lens at "/lens" (same origin, so the Lens iframe's
+    // PostMessageTransport(window.parent, window.parent) talks to the simulator host directly).
+    app.get("/", async (c) => c.html(await deps.simHtml!()));
+    app.get("/lens", async (c) => c.html(await deps.lensHtml()));
+  }
   app.all("/mcp", async (c) => {
     if (new URL(c.req.url).searchParams.has("access_token")) return c.json({ error: "token_in_query_not_allowed" }, 400);
     const principal = await deps.resolvePrincipal(c.req.header("authorization"));

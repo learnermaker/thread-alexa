@@ -14,6 +14,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "build:lens": "vite build --config web/lens/vite.config.ts",
+    "build:sim": "vite build --config web/sim/vite.config.ts",
     "verify": "node scripts/verify.mjs",
     "synth": "cdk synth",
     "deploy": "cdk deploy --require-approval broadening"

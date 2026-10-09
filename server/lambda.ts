@@ -64,6 +64,7 @@ const appPromise = keysPromise.then(async (keys) => {
   return buildHttpApp({
     core, oauth,
     lensHtml: async () => "<!doctype html><title>Thread Lens</title><p>Lens placeholder.</p>",
+    simHtml: async () => "<!doctype html><title>Alexa+ experience simulator</title><p>Simulator placeholder (bundle served from the deployed asset).</p>",
     resolvePrincipal: jwtResolver(oauth),
   });
 });
