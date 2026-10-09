@@ -5,6 +5,7 @@ import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/
 import { buildMcpServer, type McpDeps } from "./mcp/server.ts";
 import type { ResolvePrincipal } from "./auth/principal.ts";
 import { oauthRoutes, type OAuthConfig } from "./auth/oauth.ts";
+import { privacyHtml, termsHtml } from "./legal.ts";
 
 export interface AppDeps extends McpDeps {
   resolvePrincipal: ResolvePrincipal;
@@ -18,6 +19,9 @@ const SERVICE_METHODS = new Set(["initialize", "notifications/initialized", "too
 export function buildHttpApp(deps: AppDeps): Hono {
   const app = new Hono();
   app.get("/health", (c) => c.json({ ok: true, protocol: "2025-11-25" }));
+  // Legal pages (D18.10): the add-on manifest points at these HTTPS URLs.
+  app.get("/privacy", (c) => c.html(privacyHtml()));
+  app.get("/terms", (c) => c.html(termsHtml()));
   if (deps.oauth) oauthRoutes(app, deps.oauth);
   if (deps.simHtml) {
     // The simulator SPA at "/" and the Lens at "/lens" (same origin, so the Lens iframe's

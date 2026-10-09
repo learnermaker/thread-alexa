@@ -1,0 +1,35 @@
+{
+  "_comment": "Example Alexa+ MCP add-on manifest. We cannot deploy an add-on for the hackathon; this documents the shape and respects the B6 limits (name <=30, short description <=123, 3-4 example phrases, icons at 72/64/88/126/180/241 px). URLs point at the deployed Function URL (PUBLIC_BASE_URL).",
+  "schemaVersion": "1.0",
+  "name": "THREAD",
+  "shortDescription": "Keeps shared household commitments on track: when something changes, it finds what's affected and who should act.",
+  "longDescription": "THREAD is the coordination layer between intent and resolution. When a plan changes, it finds every affected commitment, moves responsibility to the right person, shares only the necessary context, and stays with the commitment until evidence shows it is actually done.",
+  "mcp": {
+    "endpoint": "https://REPLACE_WITH_PUBLIC_BASE_URL/mcp",
+    "transport": "streamable-http",
+    "protocolVersion": "2025-11-25"
+  },
+  "oauth": {
+    "authorizationServerMetadata": "https://REPLACE_WITH_PUBLIC_BASE_URL/.well-known/oauth-authorization-server",
+    "protectedResourceMetadata": "https://REPLACE_WITH_PUBLIC_BASE_URL/.well-known/oauth-protected-resource",
+    "scopes": ["mcp:tools", "mcp:resources"]
+  },
+  "examplePhrases": [
+    "What's on this weekend?",
+    "I can't drive Saturday morning.",
+    "Ask Sam to take Leo's tournament.",
+    "How's Leo's tournament looking?"
+  ],
+  "icons": {
+    "72": "https://REPLACE_WITH_PUBLIC_BASE_URL/icons/icon-72.png",
+    "64": "https://REPLACE_WITH_PUBLIC_BASE_URL/icons/icon-64.png",
+    "88": "https://REPLACE_WITH_PUBLIC_BASE_URL/icons/icon-88.png",
+    "126": "https://REPLACE_WITH_PUBLIC_BASE_URL/icons/icon-126.png",
+    "180": "https://REPLACE_WITH_PUBLIC_BASE_URL/icons/icon-180.png",
+    "241": "https://REPLACE_WITH_PUBLIC_BASE_URL/icons/icon-241.png"
+  },
+  "legal": {
+    "privacyPolicyUrl": "https://REPLACE_WITH_PUBLIC_BASE_URL/privacy",
+    "termsOfUseUrl": "https://REPLACE_WITH_PUBLIC_BASE_URL/terms"
+  }
+}

@@ -20,5 +20,8 @@
 | Output schemas | `outputSchema: operations[op].output` full zod object | `conformance.test.ts: tools/list` | Done |
 | MCP Apps UI resource | `ui://thread/lens` registered with `RESOURCE_MIME_TYPE` (`text/html;profile=mcp-app`) | `conformance.test.ts: resources/read lens returns HTML with profile=mcp-app MIME` | Done |
 | Voice-only summary | `speak()` in `mcp/speak.ts` returns ≤ ~25-word summary per operation | `conformance.test.ts: voice summaries match design.md table` | Done |
+| Agent Skill | `skills/thread/SKILL.md`: when/how to use the 8 tools (create on commitments, report on changes, never claim resolution) | reviewed; wording gate (`check-wording`) | Done |
+| Legal pages (manifest HTTPS URLs) | `PRIVACY.md` / `TERMS.md` served at `/privacy` and `/terms` by `buildHttpApp` (local + Lambda) | `check-legal.mjs` (no drift from the markdown) | Done |
+| Add-on manifest (documented limits) | `addon-manifest.example.json`: name ≤30, short desc ≤123, 3–4 phrases, icons 72/64/88/126/180/241 | limits asserted in the file's build check | Done (example only; cannot deploy) |
 
 OAuth is implemented by an embedded, offline-capable authorization server (spec auth); dev tokens remain for the Inspector proof and are disabled on AWS. See `docs/adr/0005-embedded-authorization-server.md`.

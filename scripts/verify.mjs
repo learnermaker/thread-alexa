@@ -7,6 +7,8 @@ const steps = [
   ["dependency allowlist", "node scripts/check-deps.mjs"],
   ["secret scan", "node scripts/check-secrets.mjs"],
   ["wording", "node scripts/check-wording.mjs"],
+  ["legal pages", "node scripts/check-legal.mjs"],
+  ["addon manifest", "node scripts/check-manifest.mjs"],
   ["typecheck", "npx tsc --noEmit"],
   ...["web/tsconfig.json", "infra/tsconfig.json"].filter((f) => existsSync(f)).map((f) => [`typecheck ${f}`, `npx tsc -p ${f} --noEmit`]),
   ["tests", "npx vitest run"],
