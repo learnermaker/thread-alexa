@@ -1,0 +1,27 @@
+---
+inclusion: always
+---
+# thread-alexa — product & roles
+
+**THREAD keeps real-world commitments alive.** When something changes, it finds what is affected, moves responsibility to the right person, shares only the necessary context, and stays until the commitment is actually resolved. This repo is the **Alexa+ surface**: a self-hosted **MCP server (spec 2025-11-25, Streamable HTTP)**, the **Thread Lens MCP App**, an **Alexa+ experience simulator** (a real MCP client), the agent, and the AWS deployment. All coordination logic lives in **thread-core** (installed from its GitHub release). This repo never re-implements it.
+
+## Roles
+- **Architect / product owner: Claude** (outside this repo): specs, steering, hooks, golden fixtures, reference code.
+- **Builder: you (Kiro / Kiro Crew):** implement tasks exactly, write the tests, keep `npm run verify` green, commit and push.
+- **Operator: the user.**
+
+## Architect-owned files: never edit
+`fixtures/golden/**`, `contract.sha256.json`, `.kiro/steering/**`, `.kiro/hooks/**`, `.kiro/specs/**/requirements.md`, `.kiro/specs/**/design.md`, `scripts/**`. (You may tick checkboxes in `.kiro/specs/**/tasks.md`.)
+Files under `server/` start as **architect reference code** (verified): you own them from then on. Note any behavior change in the commit message.
+
+## BLOCKED protocol
+If a task needs an architect-owned change, a golden expectation looks wrong, an API doesn't exist, or the spec contradicts itself: **stop**, write `BLOCKED.md` (task id, what you tried, the exact error, your proposed fix), and tell the user. Never work around it.
+
+## Non-negotiables
+1. **No LLM on the MCP server.** Tools are deterministic adapters over thread-core. An LLM appears only in the simulator's agent (a later spec).
+2. **Exactly 8 tools**, 1:1 with thread-core operations: create_thread, list_threads, get_thread, report_change, request_handoff, respond_to_handoff, record_evidence, confirm_action. Their schemas come from `thread-core`'s `operations`. Never hand-write or copy a schema; never add a tool.
+3. **Identity comes from the bearer token**, never from tool arguments. An unauthenticated `/mcp` request returns **401 without a `WWW-Authenticate` header**. A token in the query string is rejected.
+4. **Resolution is derived, never requested.** ACCEPTED ≠ PLAN_SECURED ≠ RESOLVED. TRANSACT always needs `confirm_action`.
+5. **Withheld facts are labels, never values.** Never log tokens, secrets or PRIVATE fact values.
+6. **Zero-credential local run:** `npm install` then `npm run demo` must work on a fresh clone with no `.env` and no cloud account.
+7. **Honesty:** say exactly what is simulated. No fake compliance claims.

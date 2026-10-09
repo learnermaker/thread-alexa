@@ -1,0 +1,28 @@
+{
+  "name": "thread-alexa",
+  "version": "0.1.0",
+  "private": true,
+  "description": "THREAD for Alexa+: an MCP server, MCP App and simulator that keep real-world commitments alive. Built on thread-core.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "demo": "node --env-file-if-exists=.env server/local.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "verify": "node scripts/verify.mjs"
+  },
+  "dependencies": {
+    "@hono/node-server": "2.1.4",
+    "@modelcontextprotocol/ext-apps": "1.7.5",
+    "@modelcontextprotocol/sdk": "1.32.1",
+    "hono": "4.13.13",
+    "thread-core": "https://github.com/learnermaker/thread-core/releases/download/v0.1.0/thread-core-0.1.0.tgz",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.1",
+    "typescript": "5.9.3",
+    "vitest": "5.0.3"
+  }
+}
