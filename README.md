@@ -19,3 +19,15 @@ License: Apache-2.0
    - URL: `http://localhost:8787/mcp`
    - Add header — `Authorization`: `Bearer dev-maya`
 4. Click **Connect** — you should see 8 tools and the Thread Lens resource.
+
+## Sign-in (OAuth)
+
+The demo server embeds a small OAuth 2.1 authorization server (ES256 JWTs, no cloud account). Discovery URLs:
+
+- Authorization server metadata: `http://localhost:8787/.well-known/oauth-authorization-server`
+- Protected-resource metadata: `http://localhost:8787/.well-known/oauth-protected-resource`
+- Public signing keys (JWKS): `http://localhost:8787/oauth/jwks`
+
+Two token tiers: **Tier 1** (`client_credentials`, scope `mcp:service`) may only `initialize` and `tools/list`; **Tier 2** (`authorization_code` + PKCE, scopes `mcp:tools` / `mcp:resources`) acts as a signed-in household member.
+
+> **DEMO_MODE** (`DEMO_MODE=true`, the default locally) auto-consents: `/oauth/authorize` with a `login_hint` redirects immediately without showing the person picker. This is a demo convenience and is disclosed here; set `DEMO_MODE=false` to require the picker. Dev tokens (`Bearer dev-<person>`) are enabled by `AUTH_DEV_TOKENS=true` for the Inspector and tests, and are disabled on AWS.

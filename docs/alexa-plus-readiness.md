@@ -9,8 +9,8 @@
 | No token in query string | Query string `access_token` param returns 400 before auth | `conformance.test.ts: token in query string → 400` | Done |
 | PRM metadata (title, description, annotations) | Each tool has `title`, `description`, per-tool `annotations` from `TOOLS` in `mcp/tools.ts` | `conformance.test.ts: tools/list: exactly 8 tools with required fields` | Done |
 | AS metadata (outputSchema) | `outputSchema: operations[op].output` full zod object from thread-core | `conformance.test.ts: tools/list: exactly 8 tools with required fields` | Done |
-| Tier 1 `mcp:service` client\_credentials + resource | – | – | Planned (spec auth) |
-| Tier 2 auth code + PKCE S256 + resource | – | – | Planned (spec auth) |
+| Tier 1 `mcp:service` client\_credentials + resource | Embedded AS: `client_credentials` (Basic or POST), `resource` required, scope `mcp:service`, no refresh; RS gates service tokens to initialize/tools-list/ping only | `auth.test.ts: A4-A10` | Done |
+| Tier 2 auth code + PKCE S256 + resource | Embedded AS: `/oauth/authorize` person picker (DEMO `login_hint`), stateless signed code + refresh JWTs, ES256 access tokens (aud = MCP URL) | `auth.test.ts: A11-A20` | Done |
 | No DCR/OIDC | Not implemented (not required) | – | N/A |
 | One intent per tool | 8 tools, 1:1 with thread-core operations, single-intent descriptions | `conformance.test.ts: tools/list` | Done |
 | Descriptions say when/why/what | Tool descriptions follow Alexa+ guidance: when to call, why, what it returns | `conformance.test.ts: tools/list: exactly 8 tools with required fields` | Done |
@@ -21,4 +21,4 @@
 | MCP Apps UI resource | `ui://thread/lens` registered with `RESOURCE_MIME_TYPE` (`text/html;profile=mcp-app`) | `conformance.test.ts: resources/read lens returns HTML with profile=mcp-app MIME` | Done |
 | Voice-only summary | `speak()` in `mcp/speak.ts` returns ≤ ~25-word summary per operation | `conformance.test.ts: voice summaries match design.md table` | Done |
 
-OAuth rows are **planned (spec auth)** and have not been marked done.
+OAuth is implemented by an embedded, offline-capable authorization server (spec auth); dev tokens remain for the Inspector proof and are disabled on AWS. See `docs/adr/0005-embedded-authorization-server.md`.
