@@ -18,6 +18,7 @@
     "@modelcontextprotocol/ext-apps": "1.7.5",
     "@modelcontextprotocol/sdk": "1.32.1",
     "hono": "4.13.13",
+    "jose": "6.2.12",
     "thread-core": "https://github.com/learnermaker/thread-core/releases/download/v0.1.0/thread-core-0.1.0.tgz",
     "zod": "4.6.5"
   },

@@ -13,7 +13,8 @@ export interface McpDeps {
 }
 export type PersonPrincipal = { kind: "person"; household_id: string; person_id: string };
 
-export function buildMcpServer(deps: McpDeps, principal: PersonPrincipal): McpServer {
+/** principal is undefined for Tier 1 service tokens (they can list tools but never call them; app.ts enforces it too). */
+export function buildMcpServer(deps: McpDeps, principal: PersonPrincipal | undefined): McpServer {
   const server = new McpServer({ name: "thread", title: "THREAD", version: "0.1.0" });
   for (const t of TOOLS) {
     const schema = operations[t.op];
@@ -29,8 +30,9 @@ export function buildMcpServer(deps: McpDeps, principal: PersonPrincipal): McpSe
         _meta: { ui: { resourceUri: LENS_URI } },
       },
       async (args: unknown) => {
+        if (!principal) return { isError: true, content: [{ type: "text" as const, text: "Sign in as a person to use THREAD tools." }] };
         const started = performance.now();
-        const r = await (deps.core[t.op] as (p: unknown, i: unknown) => Promise<{ ok: boolean; data?: unknown; error?: { code: string; message: string; next_steps: string[] } }>)(principal, args);
+        const r = await (deps.core[t.op] as (p: unknown, i: unknown) => Promise<{ ok: boolean; data?: unknown; error?: { code: string; message: string; next_steps: string[] } }>)({ kind: principal.kind, household_id: principal.household_id, person_id: principal.person_id }, args);
         deps.onCall?.({ tool: t.name, ms: Math.round(performance.now() - started), ok: r.ok, ...(r.ok ? {} : { code: r.error!.code }) });
         if (!r.ok) {
           // No structuredContent on errors: the SDK client validates it against outputSchema even when isError is true.
