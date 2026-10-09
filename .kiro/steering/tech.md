@@ -13,7 +13,7 @@ inclusion: always
 | Validation | `zod` 4.6.5 (the same copy thread-core uses) |
 | Tests | `vitest` 5.0.3 |
 
-**Never add, remove or upgrade a dependency.** `npm run verify` enforces the list. Later specs add dependencies through the architect.
+**Only packages in `scripts/check-deps.mjs` may be installed, at exactly that version, with `npm install --save-exact <pkg>@<version>`.** The approved list also covers the UI (react, vite, vite-plugin-singlefile), the e2e and video tools (@playwright/test, ffmpeg-static) and AWS (aws-cdk-lib, aws-cdk, constructs, esbuild, @aws-sdk/*). Anything else needs the architect (BLOCKED.md).
 
 ## Commands
 - `npm run demo`: local server on http://localhost:8787 (MCP at `/mcp`)

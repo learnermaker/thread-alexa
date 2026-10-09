@@ -19,7 +19,7 @@ process.stdin.on("end", () => {
       /src\/store\/memory\.ts/,
       /contract\.sha256\.json/,
       /\.kiro\/(steering|hooks)\//,
-      /\.kiro\/specs\/[^"']*\/(requirements|design)\.md/, // tasks.md stays writable: Kiro ticks task checkboxes there
+      /\.kiro\/specs\/(alexa-bootstrap|mcp-tools|auth)\/(requirements|design)\.md/, // architect-written specs; new spec folders may be authored by Kiro in authorized runs
       /scripts\/(hooks\/|check-|verify\.mjs)/,
     ];
     const hit = protectedPaths.find((re) => re.test(input));
