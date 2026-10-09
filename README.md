@@ -9,3 +9,13 @@ THREAD keeps real-world commitments alive across people, events and apps. When s
 - Built spec-first with Kiro: see `.kiro/specs/` and `docs/kiro-log.md`
 
 License: Apache-2.0
+
+## Connect with MCP Inspector
+
+1. Start the demo server: `npm run demo`
+2. In another terminal: `npx @modelcontextprotocol/inspector`
+3. In the Inspector UI:
+   - Transport: **Streamable HTTP**
+   - URL: `http://localhost:8787/mcp`
+   - Add header — `Authorization`: `Bearer dev-maya`
+4. Click **Connect** — you should see 8 tools and the Thread Lens resource.

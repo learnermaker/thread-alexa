@@ -8,6 +8,7 @@
   "engines": { "node": ">=24" },
   "scripts": {
     "demo": "node --env-file-if-exists=.env server/local.ts",
+    "latency": "node server/latency.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "verify": "node scripts/verify.mjs"
