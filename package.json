@@ -15,12 +15,16 @@
     "test": "vitest run",
     "build:lens": "vite build --config web/lens/vite.config.ts",
     "build:sim": "vite build --config web/sim/vite.config.ts",
+    "voices": "node scripts/voices.mjs",
+    "e2e": "npm run build:lens && npm run build:sim && playwright test",
     "verify": "node scripts/verify.mjs",
     "synth": "cdk synth",
     "deploy": "cdk deploy --require-approval broadening"
   },
   "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "3.1147.0",
     "@aws-sdk/client-dynamodb": "3.1147.0",
+    "@aws-sdk/client-polly": "3.1147.0",
     "@aws-sdk/lib-dynamodb": "3.1147.0",
     "@hono/node-server": "2.1.4",
     "@modelcontextprotocol/ext-apps": "1.7.5",
@@ -33,6 +37,7 @@
     "zod": "4.6.5"
   },
   "devDependencies": {
+    "@playwright/test": "1.64.0",
     "@types/aws-lambda": "8.10.164",
     "@types/node": "24.19.1",
     "@types/react": "19.3.0",

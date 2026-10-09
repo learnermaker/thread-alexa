@@ -1,16 +1,23 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { LensHost } from "./lens-host.tsx";
 import {
-  callTool, getClock, getHousehold, getInbox, getLog, mcpHandshake, resetDemo,
-  sendToAgent, setClock, signIn, type Token,
+  callTool, getClock, getHousehold, getInbox, getLog, getStory, mcpHandshake, resetDemo,
+  sendToAgent, setClock, signIn, speak as speakAudio, type Token,
 } from "./mcp.ts";
-import type { ClockState, Household, InboxItem, LensResult, LogEntry, Person, Turn } from "./types.ts";
+import type { Beat, ClockState, Household, InboxItem, LensResult, LogEntry, Person, Turn } from "./types.ts";
 
 interface DeviceState { token?: Token; person?: Person; transcript: Turn[] }
 
 // Pick personas by name, falling back to the first two sign-in-able persons.
 const pick = (hh: Household, name: string): Person | undefined =>
   hh.persons.find((p) => p.name.toLowerCase().startsWith(name.toLowerCase())) ?? undefined;
+
+// Which Lens mode a tool result shows (mirrors web/lens App.tsx), for the data-lens-mode marker.
+const MODE_FOR: Record<string, string> = {
+  list_threads: "CAROUSEL", report_change: "RIPPLE", request_handoff: "RECEIPT",
+  respond_to_handoff: "SECURED", confirm_action: "SECURED", get_thread: "DETAIL", record_evidence: "RESOLVED",
+};
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export function App() {
   const [hh, setHh] = useState<Household | null>(null);
@@ -24,6 +31,8 @@ export function App() {
   const [live, setLive] = useState(false);
   const [input, setInput] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [lensMode, setLensMode] = useState("IDLE");
+  const [playing, setPlaying] = useState(false);
   const samId = useRef<string | undefined>(undefined);
 
   // Boot: load household + clock, then sign both devices in through the real OAuth flow.
@@ -76,6 +85,7 @@ export function App() {
     try {
       await resetDemo();
       setLens(undefined);
+      setLensMode("IDLE");
       setInbox([]);
       setEcho((d) => ({ ...d, transcript: [{ who: "thread", text: "Demo reset." }] }));
       setClockState(await getClock());
@@ -91,12 +101,50 @@ export function App() {
       const r = await sendToAgent("echo", text);
       setLive(Boolean(r.live));
       setEcho((d) => ({ ...d, transcript: [...d.transcript, { who: "thread", text: r.reply ?? "(no reply)" }] }));
-      // If the agent surfaced a tool result for the Lens, it is echoed via /api/log; the Lens
-      // itself is fed by the scripted/live agent phase. Here we keep the UI responsive.
+      if (r.lens) {
+        setLens(r.lens);
+        setLensMode(MODE_FOR[r.lens.toolName] ?? "DETAIL");
+      }
     } catch {
-      setEcho((d) => ({ ...d, transcript: [...d.transcript, { who: "thread", text: "(agent not wired yet — typed input is live; scripted agent arrives in the next phase)" }] }));
+      setEcho((d) => ({ ...d, transcript: [...d.transcript, { who: "thread", text: "(agent unavailable)" }] }));
     }
   }, []);
+
+  // "Play the story": walk every beat with real clock jumps, routed to each beat's device, in ~90s.
+  const onPlay = useCallback(async () => {
+    if (playing) return;
+    setPlaying(true);
+    try {
+      await resetDemo();
+      setLens(undefined);
+      setLensMode("IDLE");
+      setEcho((d) => ({ ...d, transcript: [{ who: "thread", text: "Playing the story…" }] }));
+      const { beats } = await getStory();
+      const perBeat = Math.max(800, Math.round(90000 / beats.length));
+      for (const beat of beats as Beat[]) {
+        setClockState(await setClock({ iso: beat.clock }));
+        setLensMode(beat.expected_lens_mode);
+        const set = beat.device === "phone" ? setPhone : setEcho;
+        if (beat.utterance) {
+          set((d) => ({ ...d, transcript: [...d.transcript, { who: "you", text: beat.utterance }] }));
+          const r = await sendToAgent(beat.device, beat.utterance);
+          setLive(Boolean(r.live));
+          if (r.lens) { setLens(r.lens); setLensMode(MODE_FOR[r.lens.toolName] ?? beat.expected_lens_mode); }
+          set((d) => ({ ...d, transcript: [...d.transcript, { who: "thread", text: r.reply ?? beat.spoken_line }] }));
+          speakAudio(beat.id, r.reply ?? beat.spoken_line);
+        } else if (beat.spoken_line) {
+          set((d) => ({ ...d, transcript: [...d.transcript, { who: "thread", text: beat.spoken_line }] }));
+          speakAudio(beat.id, beat.spoken_line);
+        }
+        if (samId.current) { try { setInbox((await getInbox(samId.current)).items ?? []); } catch { /* transient */ } }
+        await sleep(perBeat);
+      }
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setPlaying(false);
+    }
+  }, [playing]);
 
   // Accept / Decline a handoff from the phone, using Sam's own token (real tool call).
   const respond = async (item: InboxItem, accept: boolean) => {
@@ -122,16 +170,19 @@ export function App() {
           ))}
         </span>
         <button onClick={onReset}>Reset demo</button>
+        <button className="play" onClick={() => void onPlay()} disabled={playing} data-testid="play-story">
+          {playing ? "Playing…" : "Play the story"}
+        </button>
         <button onClick={() => setDrawerOpen((v) => !v)}>{drawerOpen ? "Hide" : "Under the hood"}</button>
       </header>
 
       {error && <div className="error">{error}</div>}
 
-      <main className="stage">
+      <main className="stage" data-lens-mode={lensMode} data-live={live ? "live" : "scripted"}>
         <section className="device echo">
           <div className="device-title">Kitchen Echo Show — {echo.person?.name ?? "…"}</div>
           <div className="echo-inner">
-            <div className="transcript">
+            <div className="transcript" data-testid="echo-transcript">
               {echo.transcript.map((t, i) => (
                 <p key={i} className={t.who}>{t.text}</p>
               ))}

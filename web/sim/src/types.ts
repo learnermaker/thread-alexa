@@ -11,6 +11,16 @@ export interface Turn { who: "you" | "thread"; text: string }
 // What the Echo Show feeds the Lens: the tool name and its structuredContent.
 export interface LensResult { toolName: string; structuredContent: Record<string, unknown> }
 
+// A story beat (subset read by the player): /api/story.
+export interface Beat {
+  id: string;
+  clock: string;
+  device: "echo" | "phone";
+  utterance: string;
+  expected_lens_mode: string;
+  spoken_line: string;
+}
+
 // A handoff item shown in Sam's inbox (shape from thread-core inbox output; only read fields typed).
 export interface InboxItem {
   handoff_id?: string;

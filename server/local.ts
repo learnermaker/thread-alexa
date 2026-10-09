@@ -9,6 +9,10 @@ import { loadOrCreateKeys } from "./auth/keys.ts";
 import { demoClock } from "./clock.ts";
 import { fileStore } from "./store/file-store.ts";
 import { demoCalendar, demoPharmacy, weatherSchedule, createWatcher } from "./world/index.ts";
+import { mcpClients } from "./agent/mcp-client.ts";
+import { mountAgent } from "./agent/handler.ts";
+import { existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 
 const env = (k: string, d: string) => process.env[k] ?? d;
 const port = Number(env("PORT", "8787"));
@@ -121,6 +125,28 @@ app.post("/api/reset", async (c) => {
 });
 
 app.get("/api/log", (c) => c.json(calls.slice(-50)));
+
+// --- Agent (scripted + optional Bedrock live), story and voice assets ---
+
+// Device -> person: Echo = Maya, phone = Sam, matching the simulator's own persona pick.
+const pickId = (name: string) => persons.find((p: { name: string }) => p.name.toLowerCase().startsWith(name))?.id ?? persons[0]?.id;
+const deviceToPerson = { echo: pickId("maya"), phone: pickId("sam") } as Record<string, string>;
+const mcp = mcpClients(base); // dev tokens are on locally; the agent calls our own /mcp over real MCP
+mountAgent(app, { mcp, deviceToPerson });
+
+// The beat script drives "Play the story" and the e2e; served so the client reads the same source.
+app.get("/api/story", (c) => c.json(JSON.parse(readFileSync(new URL("../story/story.json", import.meta.url), "utf8"))));
+
+// Pre-rendered voice MP3s (npm run voices). Optional: absent files just 404 and playback falls back.
+const voicesDir = fileURLToPath(new URL("../web/public/voices/", import.meta.url));
+app.get("/voices/:file", (c) => {
+  const file = c.req.param("file");
+  if (!/^[a-z0-9_]+\.mp3$/.test(file)) return c.json({ error: "not found" }, 404);
+  const path = voicesDir + file;
+  if (!existsSync(path)) return c.json({ error: "not found" }, 404);
+  const buf = readFileSync(path);
+  return c.body(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer, 200, { "content-type": "audio/mpeg" });
+});
 
 serve({ fetch: app.fetch, port }, () =>
   console.log(`THREAD MCP server on ${base}/mcp (protocol 2025-11-25; OAuth at ${base}/.well-known/oauth-authorization-server; dev tokens ${devTokens ? "ON" : "off"}; demo APIs at ${base}/api/clock)`),

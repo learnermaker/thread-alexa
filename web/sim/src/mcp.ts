@@ -2,7 +2,7 @@
 // Each device holds its own token and signs in through the REAL embedded authorization
 // server (spec auth / Master Spec D12). DEMO auto-consent + login_hint make it one hop.
 
-import type { ClockState, Household, Inbox, LogEntry } from "./types.ts";
+import type { Beat, ClockState, Household, Inbox, LogEntry } from "./types.ts";
 
 const CLIENT_ID = "alexa-sim";
 // The demo client is confidential; this is the public demo secret (also the server default).
@@ -121,7 +121,26 @@ export const getInbox = (person: string) => api<Inbox>(`/api/inbox?person=${enco
 export const getLog = () => api<LogEntry[]>("/api/log");
 export const resetDemo = () => api<{ ok?: boolean }>("/api/reset", { method: "POST" });
 
-export interface AgentReply { reply?: string; live?: boolean }
+export interface AgentReply { reply?: string; live?: boolean; lens?: { toolName: string; structuredContent: Record<string, unknown> } }
 // The scripted/live agent endpoint (simulator-agent phase). Typed input always posts here.
 export const sendToAgent = (device: string, text: string) =>
   api<AgentReply>("/api/agent", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ device, text }) });
+
+export const getStory = () => api<{ beats: Beat[] }>("/api/story");
+
+// Playback: prefer the pre-rendered MP3 (npm run voices), else the browser's speech synthesis.
+export function speak(beatId: string, text: string): void {
+  try {
+    const audio = new Audio(`${origin()}/voices/${beatId}.mp3`);
+    audio.play().catch(() => speakSynth(text));
+  } catch {
+    speakSynth(text);
+  }
+}
+function speakSynth(text: string): void {
+  if (!text || typeof window === "undefined" || !window.speechSynthesis) return;
+  try {
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+  } catch { /* no voice available */ }
+}
