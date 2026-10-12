@@ -5,6 +5,7 @@ coverage/
 .data-*/
 web/dist/
 web/dist-lens/
+video/out/
 test-results/
 playwright-report/
 cdk.out/

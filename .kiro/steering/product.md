@@ -25,6 +25,9 @@ Files under `server/` start as **architect reference code** (verified): you own 
 - Never edit anything inside `../thread-prep/`; it belongs to the architect.
 - Temporary files (logs, scratch data, downloads) go in **`../thread-scratchpad/`**, never in the repo. If you create something reusable there (a script, a command list), keep it and mention it in your summary.
 
+## Authorized autonomous runs
+When a run file from the architect (in `../thread-prep/kiro/crew/`) says so, you may **author new spec folders** (`.kiro/specs/<name>/requirements.md`, `design.md`, `tasks.md`) yourself, **derived strictly from the Master Spec sections the run file names**. You still don't change product decisions: if the Master Spec is silent, choose the simplest option that keeps the golden story passing and record it in the spec under "Decisions made by the developer" for architect review.
+
 ## BLOCKED protocol
 If a task needs an architect-owned change, a golden expectation looks wrong, an API doesn't exist, or the spec contradicts itself: **stop**, write `BLOCKED.md` (task id, what you tried, the exact error, your proposed fix), and tell the user. Never work around it.
 

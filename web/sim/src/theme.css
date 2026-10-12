@@ -1,0 +1,70 @@
+:root {
+  --bg: #0b0f14;
+  --panel: #151b23;
+  --ink: #e8edf2;
+  --muted: #9aa7b4;
+  --accent: #37cdbe;
+  --danger: #e5534b;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); }
+
+.sim { display: flex; flex-direction: column; min-height: 100vh; }
+
+.bar {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.6rem 1rem; background: var(--panel); border-bottom: 1px solid #223;
+  flex-wrap: wrap;
+}
+.label { font-weight: 600; font-size: 1.05rem; }
+.badge { font-size: 0.75rem; padding: 0.15rem 0.5rem; border-radius: 999px; }
+.badge.scripted { background: #2a3340; color: var(--muted); }
+.badge.live { background: var(--accent); color: #04201d; font-weight: 600; }
+.clock { display: flex; align-items: center; gap: 0.35rem; font-size: 0.85rem; color: var(--muted); margin-left: auto; }
+.bar button {
+  background: #223; color: var(--ink); border: 1px solid #334; border-radius: 6px;
+  padding: 0.3rem 0.6rem; cursor: pointer; font-size: 0.8rem;
+}
+.bar button:hover { border-color: var(--accent); }
+
+.error { background: #3a1a1a; color: #ffb4ad; padding: 0.5rem 1rem; font-size: 0.85rem; }
+
+.stage { display: flex; gap: 1.5rem; padding: 1.5rem; align-items: flex-start; flex-wrap: wrap; }
+
+.device { background: var(--panel); border-radius: 12px; padding: 0.75rem; }
+.device-title { font-size: 0.8rem; color: var(--muted); margin-bottom: 0.5rem; }
+
+/* Echo Show laid out at 1280x800 (Echo Show 8 class), scaled down to fit. */
+.echo { width: 640px; }
+.echo-inner {
+  width: 1280px; height: 800px; transform: scale(0.5); transform-origin: top left;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+  background: #0d1117; border-radius: 10px; padding: 1rem;
+}
+.echo { height: 440px; } /* 800*0.5 + title/input */
+.transcript { overflow: auto; font-size: 1.4rem; line-height: 1.5; }
+.transcript p { margin: 0.4rem 0; }
+.transcript .you { color: var(--muted); }
+.transcript .thread { color: var(--ink); }
+.lens-frame { width: 100%; height: 100%; border: 0; background: #fff; border-radius: 8px; }
+.say { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+.say input { flex: 1; padding: 0.5rem; border-radius: 6px; border: 1px solid #334; background: #0d1117; color: var(--ink); }
+.say button { padding: 0.5rem 0.9rem; border-radius: 6px; border: 0; background: var(--accent); color: #04201d; cursor: pointer; }
+
+/* Sam's phone, 390x844. */
+.phone { width: 390px; }
+.inbox { height: 760px; overflow: auto; display: flex; flex-direction: column; gap: 0.6rem; }
+.inbox .empty { color: var(--muted); text-align: center; margin-top: 2rem; }
+.inbox-item { background: #0d1117; border: 1px solid #223; border-radius: 10px; padding: 0.75rem; }
+.inbox-title { font-weight: 600; }
+.inbox-sub { color: var(--muted); font-size: 0.85rem; margin: 0.25rem 0 0.5rem; }
+.inbox-actions { display: flex; gap: 0.5rem; }
+.inbox-actions button { flex: 1; padding: 0.5rem; border-radius: 6px; border: 0; background: var(--accent); color: #04201d; cursor: pointer; }
+.inbox-actions .decline { background: #2a3340; color: var(--ink); }
+
+.drawer { background: #0d1117; border-top: 1px solid #223; padding: 1rem; }
+.drawer-title { font-size: 0.8rem; color: var(--muted); margin-bottom: 0.5rem; }
+.drawer table { width: 100%; border-collapse: collapse; font-size: 0.8rem; font-family: ui-monospace, monospace; }
+.drawer th, .drawer td { text-align: left; padding: 0.2rem 0.5rem; border-bottom: 1px solid #1a222c; }
+.drawer tr.err td { color: var(--danger); }

@@ -1,0 +1,174 @@
+{
+  "description": "Every E1 video beat with tool calls consistent with fixtures/golden/ripple-story.json. Drives 'Play the story', the golden e2e test and the video pipeline.",
+  "beats": [
+    {
+      "id": "hook",
+      "clock": "2026-10-08T19:30:00-07:00",
+      "device": "echo",
+      "speaker": "narrator",
+      "utterance": "",
+      "tool_calls": [],
+      "expected_lens_mode": "IDLE",
+      "spoken_line": "One person in every family carries the plan in their head."
+    },
+    {
+      "id": "weekend_overview",
+      "clock": "2026-10-08T19:30:00-07:00",
+      "device": "echo",
+      "speaker": "maya",
+      "utterance": "What's on this weekend?",
+      "tool_calls": [{ "name": "list_threads", "args": {} }],
+      "expected_lens_mode": "CAROUSEL",
+      "spoken_line": "You have 3 plans: Leo's Saturday Tournament (on track), Rosa's prescription refill (plan secured) and Family dinner (plan secured)."
+    },
+    {
+      "id": "the_change",
+      "clock": "2026-10-08T19:31:00-07:00",
+      "device": "echo",
+      "speaker": "maya",
+      "utterance": "I can't drive Saturday morning.",
+      "tool_calls": [{
+        "name": "report_change",
+        "args": {
+          "change": { "type": "PERSON_UNAVAILABLE", "person": "maya", "start": "2026-10-10T07:00:00-07:00", "end": "2026-10-10T13:00:00-07:00" },
+          "idempotency_key": "ripple-1"
+        }
+      }],
+      "expected_lens_mode": "RIPPLE",
+      "spoken_line": "This affects Leo's Saturday Tournament and Rosa's prescription refill. Family dinner is fine. Best option: Sam."
+    },
+    {
+      "id": "tournament_handoff",
+      "clock": "2026-10-08T19:32:00-07:00",
+      "device": "echo",
+      "speaker": "maya",
+      "utterance": "Ask Sam to take it.",
+      "tool_calls": [{ "name": "request_handoff", "args": { "thread_id": "thr_leo_tourney", "responsibility_id": "r_transport" } }],
+      "expected_lens_mode": "RECEIPT",
+      "spoken_line": "I've asked Sam, sharing only what they need."
+    },
+    {
+      "id": "sam_sees_inbox",
+      "clock": "2026-10-08T19:32:30-07:00",
+      "device": "phone",
+      "speaker": "narrator",
+      "utterance": "",
+      "tool_calls": [],
+      "expected_lens_mode": "INBOX",
+      "spoken_line": "Sam's phone shows the handoff request."
+    },
+    {
+      "id": "sam_accepts",
+      "clock": "2026-10-08T19:33:00-07:00",
+      "device": "phone",
+      "speaker": "sam",
+      "utterance": "Yes, I've got it.",
+      "tool_calls": [{
+        "name": "respond_to_handoff",
+        "args": { "handoff_id": "ho_1", "accept": true, "confirm_items": ["jersey"], "add_to_calendar": true }
+      }],
+      "expected_lens_mode": "SECURED",
+      "spoken_line": "Thanks. Leo's Saturday Tournament: plan secured."
+    },
+    {
+      "id": "refill_handoff",
+      "clock": "2026-10-08T19:34:00-07:00",
+      "device": "echo",
+      "speaker": "maya",
+      "utterance": "Can someone else get Rosa's refill?",
+      "tool_calls": [{ "name": "request_handoff", "args": { "thread_id": "thr_rosa_refill", "responsibility_id": "r_pickup" } }],
+      "expected_lens_mode": "RECEIPT",
+      "spoken_line": "Pharmacy delivery, Saturday 10:00 AM\u201311:00 AM, $4.99. Want me to go ahead?"
+    },
+    {
+      "id": "maya_approves",
+      "clock": "2026-10-08T19:35:00-07:00",
+      "device": "echo",
+      "speaker": "maya",
+      "utterance": "Yes, order it.",
+      "tool_calls": [{ "name": "confirm_action", "args": { "confirmation_id": "cf_1", "approve": true, "idempotency_key": "order-1" } }],
+      "expected_lens_mode": "SECURED",
+      "spoken_line": "Done. Rosa's prescription refill: plan secured."
+    },
+    {
+      "id": "all_secured",
+      "clock": "2026-10-08T19:36:00-07:00",
+      "device": "echo",
+      "speaker": "maya",
+      "utterance": "Are we all set?",
+      "tool_calls": [{ "name": "list_threads", "args": {} }],
+      "expected_lens_mode": "CAROUSEL",
+      "spoken_line": "You have 3 plans: Leo's Saturday Tournament (plan secured), Rosa's prescription refill (plan secured) and Family dinner (plan secured)."
+    },
+    {
+      "id": "rain_autonomous",
+      "clock": "2026-10-10T07:05:00-07:00",
+      "device": "echo",
+      "speaker": "system",
+      "utterance": "",
+      "tool_calls": [],
+      "expected_lens_mode": "AUTO_ACTION",
+      "spoken_line": "Rain's coming. Leave at 7:40 instead."
+    },
+    {
+      "id": "sam_checks",
+      "clock": "2026-10-10T07:06:00-07:00",
+      "device": "phone",
+      "speaker": "sam",
+      "utterance": "How's the tournament looking?",
+      "tool_calls": [{ "name": "get_thread", "args": { "thread_id": "thr_leo_tourney" } }],
+      "expected_lens_mode": "DETAIL",
+      "spoken_line": "Leo's Saturday Tournament: plan secured. Still open: arrived before check-in."
+    },
+    {
+      "id": "sam_arrives",
+      "clock": "2026-10-10T08:21:00-07:00",
+      "device": "phone",
+      "speaker": "sam",
+      "utterance": "We're here.",
+      "tool_calls": [{ "name": "record_evidence", "args": { "thread_id": "thr_leo_tourney", "condition_id": "c_arrival", "note": "We're here" } }],
+      "expected_lens_mode": "RESOLVED",
+      "spoken_line": "Got it. Leo's Saturday Tournament: done."
+    },
+    {
+      "id": "pharmacy_delivered",
+      "clock": "2026-10-10T10:42:00-07:00",
+      "device": "echo",
+      "speaker": "system",
+      "utterance": "",
+      "tool_calls": [],
+      "expected_lens_mode": "RESOLVED",
+      "spoken_line": ""
+    },
+    {
+      "id": "weekend_summary",
+      "clock": "2026-10-10T10:43:00-07:00",
+      "device": "echo",
+      "speaker": "maya",
+      "utterance": "How did the weekend go?",
+      "tool_calls": [{ "name": "list_threads", "args": {} }],
+      "expected_lens_mode": "CAROUSEL",
+      "spoken_line": "You have 3 plans: Leo's Saturday Tournament (done), Rosa's prescription refill (done) and Family dinner (plan secured)."
+    },
+    {
+      "id": "proof",
+      "clock": "2026-10-10T10:43:00-07:00",
+      "device": "echo",
+      "speaker": "narrator",
+      "utterance": "",
+      "tool_calls": [],
+      "expected_lens_mode": "LOG",
+      "spoken_line": "A real MCP server: deterministic, with an MCP App and an Agent Skill, built on AWS."
+    },
+    {
+      "id": "close",
+      "clock": "2026-10-10T10:43:00-07:00",
+      "device": "echo",
+      "speaker": "narrator",
+      "utterance": "",
+      "tool_calls": [],
+      "expected_lens_mode": "IDLE",
+      "spoken_line": "Something changes. THREAD knows what it affects, moves the responsibility, protects the context, and stays until it's done."
+    }
+  ]
+}
