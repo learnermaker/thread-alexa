@@ -1,0 +1,61 @@
+<!doctype html><meta charset="utf-8"><title>terminal</title><link rel="stylesheet" href="base.css">
+<style>
+.win{position:absolute;left:70px;top:150px;width:1780px;height:810px;background:#0c1117;border:2px solid var(--line);border-radius:16px;overflow:hidden}
+.bar{height:52px;background:#161e29;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 22px;gap:12px;font-size:22px;color:var(--muted)}
+.bar i{width:16px;height:16px;border-radius:50%;background:#3a4756;display:inline-block}
+.bar span{margin-left:14px}
+pre{margin:0;padding:22px 30px;font:500 29px/42px "Cascadia Mono",Consolas,monospace;color:#c9d1d9;height:756px;overflow:hidden;white-space:pre-wrap;overflow-wrap:anywhere}
+.p{color:var(--accent);font-weight:700}
+.dim{color:#6b7886}
+.k{color:#7aa2f7}.s{color:#9ece6a}.n{color:#ff9e64}.ok{color:var(--ok)}.bad{color:#ff8f88}
+mark{background:#37cdbe33;color:#fff;border-bottom:3px solid var(--accent);border-radius:3px;padding:0 2px}
+.chip{position:absolute;left:70px;top:70px;font-size:30px;font-weight:600;color:#04201d;background:var(--accent);padding:6px 20px;border-radius:999px}
+.note{position:absolute;right:70px;top:76px;font-size:22px;color:var(--muted)}
+.caret{display:inline-block;width:14px;height:28px;background:var(--accent);vertical-align:-4px;animation:b 1s steps(1) infinite}
+@keyframes b{50%{opacity:0}}
+</style>
+<div class="chip" id="chip">Terminal</div><div class="note" id="note"></div>
+<div class="win"><div class="bar"><i></i><i></i><i></i><span id="title">thread-alexa</span></div><pre id="t"></pre></div>
+<script>
+const t = document.getElementById("t");
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const esc = (s) => s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
+// light colouring for JSON-ish lines: "key": value
+const colorLine = (l) => {
+  const m = /^(\s*)"([^"]+)":\s*(.*)$/.exec(l);
+  if (!m) return esc(l);
+  let v = m[3];
+  const comma = v.endsWith(",") ? "," : "";
+  if (comma) v = v.slice(0, -1);
+  const cls = /^".*"$/.test(v) ? "s" : /^(-?\d+(\.\d+)?|true|false|null)$/.test(v) ? "n" : "";
+  return esc(m[1]) + '<span class="k">"' + esc(m[2]) + '"</span>: ' + (cls ? '<span class="' + cls + '">' + esc(v) + "</span>" : esc(v)) + comma;
+};
+const scroll = () => { t.scrollTop = t.scrollHeight; };
+window.T = {
+  setChip(a, b) { document.getElementById("chip").textContent = a; document.getElementById("note").textContent = b || ""; },
+  clear() { t.innerHTML = ""; },
+  async type(cmd, cps = 60) {
+    const line = document.createElement("div");
+    line.innerHTML = '<span class="p">thread-alexa $ </span><span class="c"></span><span class="caret"></span>';
+    t.appendChild(line);
+    const c = line.querySelector(".c");
+    // advance by animation frame so long commands type at a steady speed (cps is the target rate)
+    const per = Math.max(1, Math.round(cps / 60));
+    for (let i = 0; i < cmd.length; i += per) { c.textContent += cmd.slice(i, i + per); scroll(); await new Promise((r) => requestAnimationFrame(r)); }
+    line.querySelector(".caret").remove();
+  },
+  async out(lines, { gap = 22, json = false, cls = "" } = {}) {
+    for (const l of lines) {
+      const d = document.createElement("div"); d.className = cls;
+      d.innerHTML = json ? colorLine(l) : esc(l);
+      t.appendChild(d); scroll();
+      if (gap) await sleep(gap);
+    }
+  },
+  dim(text) { const d = document.createElement("div"); d.className = "dim"; d.textContent = text; t.appendChild(d); scroll(); },
+  ok(text) { const d = document.createElement("div"); d.className = "ok"; d.textContent = text; t.appendChild(d); scroll(); },
+  bad(text) { const d = document.createElement("div"); d.className = "bad"; d.textContent = text; t.appendChild(d); scroll(); },
+  blank() { t.appendChild(document.createElement("br")); },
+  mark(text) { t.innerHTML = t.innerHTML.split(esc(text)).join("<mark>" + esc(text) + "</mark>"); scroll(); },
+};
+</script>

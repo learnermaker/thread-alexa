@@ -19,6 +19,7 @@
     "e2e": "npm run build:lens && npm run build:sim && playwright test",
     "verify": "node scripts/verify.mjs",
     "video": "node video/pipeline.mjs",
+    "video:final": "node video/final.mjs",
     "synth": "cdk synth",
     "deploy": "cdk deploy --require-approval broadening"
   },

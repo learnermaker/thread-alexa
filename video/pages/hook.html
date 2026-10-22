@@ -1,0 +1,43 @@
+<!doctype html><meta charset="utf-8"><title>hook</title><link rel="stylesheet" href="base.css">
+<style>
+h1{position:absolute;left:0;right:0;top:92px;margin:0;text-align:center;font-size:104px;font-weight:800;letter-spacing:-.01em}
+h1 span{color:var(--accent)}
+.origin{position:absolute;left:380px;top:330px;width:1160px;height:150px;white-space:nowrap;border:2px solid var(--accent);border-radius:22px;background:var(--panel2);display:flex;align-items:center;justify-content:center;gap:34px;font-size:42px;font-weight:600}
+.origin .chip{padding:10px 24px;border-radius:999px;background:#1d2733;border:1.5px solid var(--line);font-size:36px}
+.origin .chip.rain{border-color:#6aa7ff;color:#bcd6ff}
+.tile{position:absolute;top:650px;width:570px;height:230px;border-radius:20px;background:var(--panel);border:2px solid var(--line);padding:30px 34px}
+.tile h3{margin:0 0 10px;font-size:38px;white-space:nowrap}
+.tile p{margin:0;font-size:30px;color:var(--muted)}
+.tile .ok{position:absolute;right:26px;bottom:22px;font-size:26px;font-weight:700;color:#04201d;background:var(--accent);padding:4px 16px;border-radius:999px;opacity:0;transition:opacity .6s}
+.tile .risk{position:absolute;right:26px;bottom:22px;font-size:26px;font-weight:700;padding:4px 16px;border-radius:999px;border:2px solid var(--danger);color:#ff8f88}
+.tile .risk.fine{border-color:var(--ok);color:var(--ok)}
+body[data-step="3"] .tile{border-color:var(--accent)}
+body[data-step="3"] .tile .ok{opacity:1}
+body[data-step="3"] .tile .risk{opacity:0}
+.tile .risk{transition:opacity .4s}
+svg{position:absolute;left:0;top:0}
+svg path{fill:none;stroke:var(--accent);stroke-width:4;stroke-dasharray:1600;stroke-dashoffset:1600;transition:stroke-dashoffset 1.1s ease}
+body[data-step="2"] svg path,body[data-step="3"] svg path{stroke-dashoffset:0}
+.ring{position:absolute;left:760px;top:335px;width:400px;height:130px;border:3px solid var(--accent);border-radius:50%;opacity:0}
+body[data-step="2"] .ring{animation:rp 2.4s ease-out 2}
+@keyframes rp{0%{opacity:.8;transform:scale(1)}100%{opacity:0;transform:scale(2.6)}}
+.foot{position:absolute;left:0;right:0;top:925px;text-align:center;font-size:48px;font-weight:700;color:var(--accent)}
+.sub{position:absolute;left:0;right:0;top:238px;text-align:center;color:var(--muted);font-size:30px}
+</style>
+<div class="brand">THREAD<small>Don't lose the thread.</small></div>
+<h1 class="fade" id="t">One change. <span>Three commitments.</span></h1>
+<div class="sub fade" id="s">The Rivera family's Saturday</div>
+<div class="origin fade" id="o"><span>Saturday morning</span><span class="chip">Maya can't drive</span><span class="chip rain">Rain is coming</span></div>
+<div class="ring"></div>
+<svg width="1920" height="1080"><path d="M960 484 C960 570 335 560 335 645"/><path d="M960 484 L960 645"/><path d="M960 484 C960 570 1585 560 1585 645"/></svg>
+<div class="tile fade" style="left:50px" id="a"><h3>Leo's tournament ride</h3><p>Saturday 9:00, Riverside Fields</p><span class="risk">At risk</span><span class="ok">Kept alive</span></div>
+<div class="tile fade" style="left:675px" id="b"><h3>Rosa's prescription refill</h3><p>Needs a pickup before noon</p><span class="risk">At risk</span><span class="ok">Kept alive</span></div>
+<div class="tile fade" style="left:1300px" id="c"><h3>Family dinner</h3><p>Saturday 7:00 PM</p><span class="risk fine">Not affected</span><span class="ok">Kept alive</span></div>
+<div class="foot fade" id="f">THREAD keeps every commitment alive.</div>
+<script>
+const $=id=>document.getElementById(id);
+window.step=n=>{document.body.dataset.step=n;
+ if(n>=1){$("t").classList.add("show");$("s").classList.add("show");$("o").classList.add("show")}
+ if(n>=2){["a","b","c"].forEach((k,i)=>setTimeout(()=>$(k).classList.add("show"),500+i*350))}
+ if(n>=3){$("f").classList.add("show")}};
+</script>

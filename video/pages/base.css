@@ -1,0 +1,8 @@
+:root{--bg:#0b0f14;--panel:#151b23;--panel2:#0f1620;--ink:#e8edf2;--muted:#9aa7b4;--accent:#37cdbe;--danger:#e5534b;--warn:#f2b84b;--ok:#4fd18b;--line:#2a3a4a}
+*{box-sizing:border-box}
+html,body{margin:0;width:1920px;height:1080px;overflow:hidden;background:var(--bg);color:var(--ink);font-family:"Segoe UI",system-ui,sans-serif}
+.mono{font-family:"Cascadia Mono",Consolas,monospace}
+.brand{position:absolute;left:70px;top:44px;font-weight:800;letter-spacing:.14em;font-size:30px}
+.brand small{font-weight:400;letter-spacing:0;color:var(--muted);font-size:20px;margin-left:14px}
+.fade{opacity:0;transform:translateY(14px);transition:opacity .7s,transform .7s}
+.show{opacity:1;transform:none}
