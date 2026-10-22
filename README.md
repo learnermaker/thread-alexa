@@ -255,7 +255,7 @@ npm test           # vitest only
 npm run e2e         # builds the Lens + simulator, then Playwright
 ```
 
-**66 tests across 8 files** pass, including the Alexa+ auth checklist (A1–A21),
+**68 tests across 9 files** pass, including the Alexa+ auth checklist (A1–A21),
 MCP conformance, idempotency, the golden story and the deterministic engine path.
 
 ## Latency
