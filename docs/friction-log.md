@@ -72,12 +72,12 @@ Severity: 🔴 blocks the prize · 🟠 costs a day · 🟡 costs hours.
 - **Expected vs actual:** Expected to return an `{ error }` object on failure;
   actual, the schema rejected it until the error branch was admitted.
 - **Severity:** 🟡 costs hours.
-- **Workaround:** Errors return `isError: true` plus a text summary and
-  `structuredContent: { error }`, and the output schemas admit the error branch.
-  Covered by the conformance tests (`server/test/conformance.test.ts`).
-- **Actionable suggestion:** SDK docs should show the recommended error envelope
-  alongside `outputSchema`, since "always return a response" and schema
-  validation pull in opposite directions.
+- **Workaround:** Errors return `isError: true` plus two text content blocks
+  (a plain-text summary and a JSON text block), with **no `structuredContent`**,
+  because the SDK client validates `structuredContent` against `outputSchema`
+  even when `isError` is `true` (see `server/mcp/server.ts:38`).
+- **Actionable suggestion:** Document this error pattern next to `outputSchema`
+  in the SDK docs, or skip output-schema validation when `isError` is `true`.
 
 ## 5. Testing MCP Apps (the Lens) without an Alexa surface — 🟠
 
