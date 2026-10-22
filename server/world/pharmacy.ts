@@ -29,7 +29,7 @@ export function demoPharmacy(cfg: PharmacyConfig, clock: Clock): DemoPharmacy {
         slot: { start: toUtc(cfg.quote.slot.start), end: toUtc(cfg.quote.slot.end) },
         amount_cents: cfg.quote.amount_cents,
         currency: cfg.quote.currency,
-        summary: `${cfg.name}, ${fmtSlot(cfg.quote.slot.start, cfg.quote.slot.end)}, $${(cfg.quote.amount_cents / 100).toFixed(2)}`,
+        summary: cfg.name, // thread-core appends the slot and the price when it words the confirmation
       };
     },
     async act(input) {

@@ -122,7 +122,7 @@ export function Handoff({ handoff, candidates, requires_confirmation }: RequestH
           <li key={c.id}>
             <span className={c.eligible === false ? "cross" : "check"}>{c.eligible === false ? "✕" : "✓"}</span>
             <span>{c.name}</span>
-            {c.reason && <span className="why">— {c.reason}</span>}
+            {(c.reason ?? c.reasons?.map((x) => x.text).join(", ")) && <span className="why">— {c.reason ?? c.reasons?.map((x) => x.text).join(", ")}</span>}
           </li>
         ))}
       </ul>

@@ -32,8 +32,11 @@ export function App({ tool, data }: AppProps) {
   if (tool === "list_threads" || Array.isArray(threads)) return <Overview {...(data as unknown as ListThreadsResult)} />;
 
   if (tool === "request_handoff" || tool === "respond_to_handoff") {
-    const receipt = (data as unknown as RequestHandoffResult).handoff?.receipt;
-    if (receipt) return <Receipt receipt={receipt} />;
+    // thread-core returns the Context Receipt beside the handoff (top level); a service handoff that still
+    // needs confirmation shows the Handoff card (with the amount) instead.
+    const r = data as unknown as RequestHandoffResult;
+    const receipt = r.handoff?.receipt ?? r.receipt;
+    if (receipt && !r.requires_confirmation) return <Receipt receipt={receipt} />;
     if (tool === "request_handoff") return <Handoff {...(data as unknown as RequestHandoffResult)} />;
   }
 
