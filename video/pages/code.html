@@ -1,0 +1,58 @@
+<!doctype html><meta charset="utf-8"><title>code</title><link rel="stylesheet" href="base.css">
+<style>
+.chip{position:absolute;left:70px;top:60px;font-size:30px;font-weight:600;color:#04201d;background:var(--accent);padding:6px 20px;border-radius:999px}
+.note{position:absolute;left:70px;right:70px;top:120px;font-size:34px;color:var(--ink)}
+.stack{position:absolute;left:70px;right:70px;top:190px;display:flex;flex-direction:column;gap:26px;transition:opacity .5s}
+.blk{background:#0c1117;border:2px solid var(--line);border-radius:14px;overflow:hidden}
+.hd{background:#161e29;padding:10px 24px;font:600 24px "Cascadia Mono",Consolas,monospace;color:var(--accent);border-bottom:1px solid var(--line)}
+.ln{display:flex;font:500 25px/38px "Cascadia Mono",Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere}
+.ln .n{width:90px;text-align:right;padding-right:22px;color:#556270;flex:none}
+.ln .c{flex:1;min-width:0}
+.md .ln{white-space:normal}.md .ln .c{white-space:pre-wrap}
+.ln.hl{background:#37cdbe1f;box-shadow:inset 6px 0 0 var(--accent)}
+.kw{color:#c792ea}.st{color:#9ece6a}.cm{color:#6b7886;font-style:italic}.ty{color:#7aa2f7}.nu{color:#ff9e64}.fn{color:#82aaff}
+.md-h{color:#7aa2f7;font-weight:700}.md-b{color:#ffcb6b}
+</style>
+<div class="chip" id="chip">Code</div>
+<div class="note" id="note"></div>
+<div class="stack" id="stack"></div>
+<script>
+const esc = (s) => s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
+const KW = /\b(import|from|export|const|let|async|await|return|if|new|function|type|interface|void|undefined|true|false|for|of|in)\b/g;
+function hlTs(line) {
+  // tokenise: comments, strings, then keywords / numbers on the remainder
+  let out = "", i = 0;
+  const cm = line.indexOf("//");
+  const code = cm >= 0 ? line.slice(0, cm) : line, tail = cm >= 0 ? line.slice(cm) : "";
+  const parts = code.split(/("[^"]*"|`[^`]*`)/);
+  for (const p of parts) {
+    if (/^("|`)/.test(p)) out += '<span class="st">' + esc(p) + "</span>";
+    else out += esc(p).replace(KW, '<span class="kw">$1</span>').replace(/\b(\d[\d.]*)\b/g, '<span class="nu">$1</span>').replace(/\b([a-zA-Z_]\w*)(?=\()/g, '<span class="fn">$1</span>');
+  }
+  return out + (tail ? '<span class="cm">' + esc(tail) + "</span>" : "");
+}
+function hlMd(line) {
+  if (/^#/.test(line)) return '<span class="md-h">' + esc(line) + "</span>";
+  return esc(line).replace(/\*\*([^*]+)\*\*/g, '<span class="md-b">**$1**</span>').replace(/`([^`]+)`/g, '<span class="st">`$1`</span>');
+}
+// blocks: [{file, from, lines:[...], hl:[absolute line numbers]}]
+window.C = {
+  setChip(a) { document.getElementById("chip").textContent = a; },
+  show(note, blocks) {
+    document.getElementById("note").textContent = note;
+    const stack = document.getElementById("stack");
+    stack.style.opacity = 0;
+    setTimeout(() => {
+      stack.innerHTML = blocks.map((b) => {
+        const md = /\.md$/.test(b.file);
+        const rows = b.lines.map((l, i) => {
+          const n = b.from + i, h = (b.hl || []).includes(n);
+          return '<div class="ln' + (h ? " hl" : "") + '"><span class="n">' + n + '</span><span class="c">' + (md ? hlMd(l) : hlTs(l)) + "</span></div>";
+        }).join("");
+        return '<div class="blk' + (md ? ' md' : '') + '"><div class="hd">' + esc(b.file) + ":" + b.from + "-" + (b.from + b.lines.length - 1) + "</div>" + rows + "</div>";
+      }).join("");
+      stack.style.opacity = 1;
+    }, 450);
+  },
+};
+</script>

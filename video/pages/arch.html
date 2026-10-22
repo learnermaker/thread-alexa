@@ -1,0 +1,89 @@
+<!doctype html><meta charset="utf-8"><title>arch</title><link rel="stylesheet" href="base.css">
+<style>
+.chip{position:absolute;left:70px;top:60px;font-size:30px;font-weight:600;color:#04201d;background:var(--accent);padding:6px 20px;border-radius:999px}
+.view{position:absolute;inset:0;opacity:0;transition:opacity .6s;pointer-events:none}
+.view.on{opacity:1}
+h2{position:absolute;left:70px;right:70px;top:128px;margin:0;font-size:56px;font-weight:800}
+.box{position:absolute;width:390px;height:300px;border-radius:20px;background:var(--panel);border:2.5px solid var(--accent);padding:26px 28px;opacity:0;transform:translateY(16px);transition:opacity .6s,transform .6s}
+.box.on{opacity:1;transform:none}
+.box.mini{height:230px}
+.box h3{margin:0 0 12px;font-size:36px}
+.box p{margin:0;font-size:27px;line-height:1.4;color:var(--muted)}
+.box .tag{position:absolute;right:20px;top:-17px;font-size:19px;font-weight:700;letter-spacing:.06em;padding:3px 12px;border-radius:999px;background:var(--accent);color:#04201d}
+.box.sim{border-style:dashed;border-color:var(--warn)}
+.box.sim .tag{background:var(--warn)}
+.aws{position:absolute;left:95px;top:640px;width:1730px;height:240px;border:2.5px dashed #6aa7ff;border-radius:22px;opacity:0;transition:opacity .7s}
+.aws.on{opacity:1}
+.aws .lbl{position:absolute;left:30px;top:-18px;background:var(--bg);padding:0 16px;color:#9ec3ff;font-size:28px;font-weight:700}
+.svc{position:absolute;top:46px;width:380px;height:165px;border-radius:16px;background:#12203a;border:2px solid #31528f;padding:20px 24px}
+.svc b{font-size:34px;display:block;margin-bottom:6px}
+.svc span{font-size:24px;color:#9aa7b4}
+svg{position:absolute;left:0;top:0;pointer-events:none}
+svg path{fill:none;stroke:var(--accent);stroke-width:4;marker-end:url(#ah)}
+svg path.d{stroke:var(--warn);stroke-dasharray:10 8}
+svg .l{fill:var(--muted);font:600 23px "Segoe UI"}
+.leg{position:absolute;left:95px;top:900px;font-size:26px;color:var(--muted)}
+.leg b{color:var(--accent)}.leg i{font-style:normal;color:var(--warn);font-weight:700}
+table{position:absolute;left:95px;top:215px;width:1730px;border-collapse:collapse;font-size:34px}
+td{padding:25px 22px;border-bottom:1px solid var(--line)}
+td:first-child{width:760px;font-weight:600}
+td.st{width:230px}
+td.nt{color:var(--muted);font-size:28px}
+.pill{display:inline-block;padding:3px 18px;border-radius:999px;font-weight:800;font-size:25px;letter-spacing:.05em}
+.real{background:var(--accent);color:#04201d}.simp{background:var(--warn);color:#2a1d00}.optp{background:#31528f;color:#dfeaff}
+tr{opacity:0;transition:opacity .5s}tr.on{opacity:1}
+.core{position:absolute;left:260px;right:260px;top:230px;height:620px;border-radius:26px;background:var(--panel);border:3px solid var(--accent);padding:48px 64px}
+.core h3{margin:0;font-size:92px;font-weight:800;letter-spacing:-.01em}
+.core .meta{margin-top:12px;font-size:40px;color:var(--accent);font-weight:700}
+.core ul{margin:26px 0 0;padding:0;list-style:none;font-size:38px;line-height:1.55}
+.core li:before{content:"✓";color:var(--accent);margin-right:18px;font-weight:800}
+.core .url{position:absolute;left:64px;bottom:40px;font-size:34px;color:var(--muted)}
+</style>
+<div class="chip" id="chip">Architecture</div>
+
+<div class="view" id="v-diagram">
+ <h2>The simulator is a real MCP client of a real MCP server</h2>
+ <svg width="1920" height="1080"><defs><marker id="ah" markerUnits="userSpaceOnUse" markerWidth="16" markerHeight="16" refX="14" refY="8" orient="auto"><path d="M0 0 L16 8 L0 16z" fill="#37cdbe" stroke="none" style="marker-end:none"/></marker></defs>
+  <path d="M482 400 L534 400"/><path d="M932 400 L984 400"/><path class="d" d="M1382 400 L1434 400"/>
+  <text class="l" x="480" y="380">MCP</text><text class="l" x="942" y="380">1:1</text></svg>
+ <div class="box" style="left:90px;top:250px" id="b1"><span class="tag">REAL APP</span><h3>Simulator</h3><p>Echo Show for Maya, phone for Sam. Each signs in with OAuth and calls /mcp. Alexa+ itself is simulated.</p></div>
+ <div class="box" style="left:540px;top:250px" id="b2"><span class="tag">REAL</span><h3>THREAD MCP server</h3><p>Hono · OAuth 2.1 · Streamable HTTP · protocol 2025-11-25 · 8 tools · MCP App · Agent Skill</p></div>
+ <div class="box" style="left:990px;top:250px" id="b3"><span class="tag">REAL · OPEN SOURCE</span><h3>thread-core</h3><p>Impact graph, candidate ranking, evidence, event log. Deterministic. Apache&#8209;2.0.</p></div>
+ <div class="box sim" style="left:1440px;top:250px" id="b4"><span class="tag">SIMULATED</span><h3>Connectors</h3><p>Calendar, pharmacy, weather. Nothing is ordered or written.</p></div>
+ <div class="box mini" style="left:90px;top:610px" id="b8"><span class="tag">REAL</span><h3>Identity</h3><p>Every call carries the signed-in person's token.</p></div>
+ <div class="box mini" style="left:540px;top:610px" id="b5"><span class="tag">REAL</span><h3>MCP App</h3><p>Thread Lens at ui://thread/lens, rendered inside the Echo Show.</p></div>
+ <div class="box mini" style="left:990px;top:610px" id="b6"><span class="tag">REAL</span><h3>Agent Skill</h3><p>skills/thread/SKILL.md: when to call each of the 8 tools.</p></div>
+ <div class="box mini sim" style="left:1440px;top:610px" id="b7"><span class="tag">OPTIONAL</span><h3>Live agent</h3><p>Bedrock, off by default. Scripted agent otherwise.<br><span class="mono" style="font-size:19px">us.anthropic.claude-haiku-5-5</span></p></div>
+ <div class="leg"><b>Solid teal</b> = real code running in this demo · <i>Dashed amber</i> = simulated or optional</div>
+</div>
+
+<div class="view" id="v-table">
+ <h2>Real versus simulated</h2>
+ <table id="tbl">
+  <tr><td>MCP server · Streamable HTTP · 8 tools</td><td class="st"><span class="pill real">REAL</span></td><td class="nt">Runs locally with npm run demo</td></tr>
+  <tr><td>OAuth 2.1 · ES256 tokens · PKCE</td><td class="st"><span class="pill real">REAL</span></td><td class="nt">Sign-in step auto-consents in demo mode</td></tr>
+  <tr><td>Coordination engine (thread-core)</td><td class="st"><span class="pill real">REAL</span></td><td class="nt">Deterministic, open source</td></tr>
+  <tr><td>Identity</td><td class="st"><span class="pill real">REAL</span></td><td class="nt">From the token · seeded household</td></tr>
+  <tr><td>Alexa+ device and experience</td><td class="st"><span class="pill simp">SIMULATED</span></td><td class="nt">No Echo hardware</td></tr>
+  <tr><td>Calendar · pharmacy · weather</td><td class="st"><span class="pill simp">SIMULATED</span></td><td class="nt">Nothing ordered or written</td></tr>
+  <tr><td>Agent</td><td class="st"><span class="pill simp">SCRIPTED</span></td><td class="nt">Bedrock live agent is optional</td></tr>
+ </table>
+</div>
+
+<div class="view" id="v-core">
+ <h2>Open source, published</h2>
+ <div class="core"><h3>thread-core</h3><div class="meta">Apache-2.0 · v0.1.0 release</div>
+  <ul><li>Impact graph: what does a change affect?</li><li>Deterministic ranking of who can take over</li><li>Evidence-based resolution, never self-declared</li><li>Event log and schemas, with its own tests</li></ul>
+  <div class="url mono">github.com/learnermaker/thread-core</div></div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+window.A = {
+  view(name) { for (const v of document.querySelectorAll(".view")) v.classList.toggle("on", v.id === "v-" + name); },
+  step(n) { // diagram: 1 boxes in order, 2 aws
+    ["b1", "b2", "b3", "b4", "b8", "b5", "b6", "b7"].forEach((k, i) => { if (n >= 1) setTimeout(() => $(k).classList.add("on"), i * 650); });
+  },
+  rows(n) { [...document.querySelectorAll("#tbl tr")].forEach((r, i) => { if (i < n) r.classList.add("on"); }); },
+};
+</script>

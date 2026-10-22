@@ -68,3 +68,9 @@ body { margin: 0; background: var(--bg); color: var(--ink); }
 .drawer table { width: 100%; border-collapse: collapse; font-size: 0.8rem; font-family: ui-monospace, monospace; }
 .drawer th, .drawer td { text-align: left; padding: 0.2rem 0.5rem; border-bottom: 1px solid #1a222c; }
 .drawer tr.err td { color: var(--danger); }
+
+.drawer-body { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; align-items: start; }
+.wire-detail { background: #0b0f14; border: 1px solid #1a222c; border-radius: 8px; padding: 0.6rem 0.8rem; font-family: ui-monospace, monospace; font-size: 0.8rem; }
+.wire-head { color: var(--accent); margin-bottom: 0.4rem; }
+.wire-label { color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.4rem; }
+.wire-detail pre { margin: 0.15rem 0 0; white-space: pre-wrap; word-break: break-word; max-height: 22rem; overflow: hidden; }

@@ -1,7 +1,7 @@
 # THREAD for Alexa+ — *Don't lose the thread.*
 
 [![CI](https://github.com/learnermaker/thread-alexa/actions/workflows/ci.yml/badge.svg)](https://github.com/learnermaker/thread-alexa/actions)
-![tests](https://img.shields.io/badge/tests-66%20passing-brightgreen)
+![tests](https://img.shields.io/badge/tests-68%20passing-brightgreen)
 ![MCP](https://img.shields.io/badge/MCP-2025--11--25-blue)
 ![license](https://img.shields.io/badge/license-Apache--2.0-blue)
 
@@ -16,27 +16,62 @@ Alexa+ is the conversation. THREAD is the coordination.
 Built as an **Alexa+ MCP server · MCP App · Agent Skill**, on top of the
 open-source [thread-core](https://github.com/learnermaker/thread-core) engine.
 
+**Demo video:** https://www.youtube.com/watch?v=SVKYPkIxvBg
+
 ---
 
 ## Try it in 60 seconds
 
-**Live link:** _(deployed Function URL — added at submission)_ · open it and press
-**Play the story**.
+### Run it locally (no account needed)
 
-**Or locally, zero credentials:**
+Node 24.
 
 ```bash
 npm install
 npm run demo
 ```
 
-Open <http://localhost:8787> and press **Play the story**. The seeded demo
-household, the embedded OAuth server, the scripted agent and the simulated
-connectors all run offline — no AWS account, no API keys.
+Open the printed URL (default <http://localhost:8787>) and press **Play the
+story**. The seeded demo household, the embedded OAuth server, the scripted
+agent and the simulated connectors all run offline — no AWS account, no API
+keys.
 
 Watch the ripple: at Saturday 8:21 AM, "I can't drive" fans out to every
 affected commitment, THREAD proposes who takes over, shares only what the new
 owner needs, and resolves each thread only when evidence says so.
+
+Verify it yourself:
+
+```bash
+npm test
+npm run e2e
+```
+
+Independent MCP proof: [`docs/evidence/inspector/README.md`](docs/evidence/inspector/README.md).
+
+## See it work
+
+```bash
+npm install && npm run demo
+```
+
+Open <http://localhost:8787> and press **Play the story** (or type to the Echo Show, or accept the handoff on Sam's phone). Press **Under the hood** to watch the live JSON-RPC calls (`POST /mcp`, `tools/call`, the response) as they happen.
+
+**Demo video:** https://www.youtube.com/watch?v=SVKYPkIxvBg (2:48, with voice, captions on screen).
+
+The Alexa+ experience is a **simulation**: its source is in this repo and it is a real MCP client of our real server. The calendar, pharmacy and weather connectors are simulated; nothing is ordered or written. See "What's real vs simulated" above.
+
+| What | Where |
+|---|---|
+| MCP server entry point (Streamable HTTP transport, `POST /mcp`) | [`server/app.ts:71`](server/app.ts) (the `/mcp` route starts at line 59); the 8 tools are registered in [`server/mcp/server.ts:17`](server/mcp/server.ts) |
+| Simulator's MCP client (OAuth sign-in, JSON-RPC calls) | [`web/sim/src/mcp.ts:76`](web/sim/src/mcp.ts) (`mcpCall`), sign-in at line 32; the scripted agent's SDK client is [`server/agent/mcp-client.ts:31`](server/agent/mcp-client.ts) |
+| The Echo Show / phone simulator | [`web/sim/src/App.tsx`](web/sim/src/App.tsx), the Lens host in [`web/sim/src/lens-host.tsx`](web/sim/src/lens-host.tsx) |
+| Agent Skill | [`skills/thread/SKILL.md`](skills/thread/SKILL.md) |
+| Independent proof (MCP Inspector CLI transcripts) | [`docs/evidence/inspector/`](docs/evidence/inspector/) |
+| OAuth and identity checks, printed | `node video/proof-auth.mjs` (with the demo running) |
+| AWS stack (synthesized, not deployed) | [`infra/stack.ts`](infra/stack.ts), `npm run synth` |
+
+Rebuild the demo video from source with `npm run video:final` (uses Playwright and the bundled ffmpeg; narration uses Windows built-in speech).
 
 ---
 
@@ -49,13 +84,16 @@ owner needs, and resolves each thread only when evidence says so.
 | Coordination engine | ✅ Real: `thread-core` derives impact, candidates, resolution deterministically | — |
 | Identity | ✅ Real: principal comes from the token; you can only act as yourself | Household is seeded composite personas, not real people |
 | Agent | Scripted agent is the default (deterministic). Live agent is real **AWS Bedrock**, toggled on | Live agent off by default |
-| Voice | Pre-rendered **Amazon Polly** MP3s | — |
+| Voice | **Amazon Polly** integration is deployment-ready (behind a flag, not run) | Demo-video narration uses Windows built-in speech; no voice files ship |
 | Connectors (calendar, pharmacy, weather) | The engine path is real | The connectors themselves are simulated; **nothing is ordered or written** |
 | Hosting | Real **AWS Lambda + DynamoDB + CDK** (synths offline) | Local run uses FileStore |
 | Alexa+ device | — | No Alexa hardware; verified via MCP Inspector + our simulator |
 
 Being upfront here is deliberate: the coordination, the auth and the engine are
-real; the outside world is simulated so the demo is safe and reproducible.
+real; the outside world is simulated so the demo is safe and reproducible. The
+**Alexa+ experience itself is simulated by a real MCP client** in [`web/sim`](web/sim/src/mcp.ts)
+that calls the real MCP server over Streamable HTTP — the same JSON-RPC calls a
+live Alexa+ device would make.
 
 ---
 
@@ -91,6 +129,26 @@ a standalone, deterministic coordination engine (its own tests, event log and
 schemas). This repository is the **Alexa+ surface** over it: transport, auth,
 the tool adapters, the UI and the cloud. Core does the coordination; this repo
 makes it speak Alexa+.
+
+---
+
+## Where the Alexa+ technology lives in code
+
+Every Alexa+ building block, with the exact file and line (judge-verifiable — the
+line numbers are real as of this commit):
+
+| Technology | File : line |
+|---|---|
+| `@modelcontextprotocol/sdk` import (Streamable HTTP server transport) | [`server/app.ts:4`](server/app.ts#L4) — `WebStandardStreamableHTTPServerTransport`; `McpServer` at [`server/mcp/server.ts:3`](server/mcp/server.ts#L3) |
+| Streamable HTTP transport instantiated (MCP `2025-11-25`) | [`server/app.ts:71`](server/app.ts#L71) |
+| `/mcp` route (JSON-RPC handler, 401 without a token) | [`server/app.ts:59`](server/app.ts#L59) |
+| The 8 tools | [`server/mcp/tools.ts:13`](server/mcp/tools.ts#L13) — [`create_thread:15`](server/mcp/tools.ts#L15), [`list_threads:23`](server/mcp/tools.ts#L23), [`get_thread:30`](server/mcp/tools.ts#L30), [`report_change:37`](server/mcp/tools.ts#L37), [`request_handoff:44`](server/mcp/tools.ts#L44), [`respond_to_handoff:51`](server/mcp/tools.ts#L51), [`record_evidence:58`](server/mcp/tools.ts#L58), [`confirm_action:65`](server/mcp/tools.ts#L65); registered at [`server/mcp/server.ts:19`](server/mcp/server.ts#L19) |
+| OAuth 2.1 authorization server | [`server/auth/oauth.ts:34`](server/auth/oauth.ts#L34) — `/oauth/authorize` [:77](server/auth/oauth.ts#L77), `/oauth/token` [:100](server/auth/oauth.ts#L100) |
+| Lens MCP App resource `ui://thread/lens` | [`server/mcp/tools.ts:76`](server/mcp/tools.ts#L76) (`LENS_URI`); UI source in [`web/lens/`](web/lens/src/App.tsx) |
+| Simulator's MCP client | [`web/sim/src/mcp.ts:76`](web/sim/src/mcp.ts#L76) (`mcpCall`), OAuth sign-in at [:32](web/sim/src/mcp.ts#L32) |
+| Live JSON-RPC wire log | server emits it at [`server/app.ts:50`](server/app.ts#L50) (`WireEntry` [:11](server/app.ts#L11)); sim reads [`/api/wire`](web/sim/src/mcp.ts#L122) and renders it in the "Under the hood" drawer at [`web/sim/src/App.tsx:80`](web/sim/src/App.tsx#L80) |
+| Agent Skill | [`skills/thread/SKILL.md`](skills/thread/SKILL.md) |
+| Independent proof (MCP Inspector CLI transcripts) | [`docs/evidence/inspector/`](docs/evidence/inspector/) |
 
 ---
 
@@ -134,21 +192,41 @@ account). Discovery:
 
 ---
 
-## Deploy (AWS, synth-only by default)
+## AWS (built with Kiro Crew; deployment-ready, not deployed)
+
+This project was built with **Kiro IDE and the Kiro Crew task runner** — the
+`.kiro/` folder (specs, steering, hooks) and `crew/OVERNIGHT_REPORT.md` are
+committed as evidence of the spec-driven, agent-run build.
+
+The AWS stack is **deployment-ready but not deployed**:
 
 ```bash
-npm run synth      # CDK synth; passes offline with zero AWS credentials
-npm run deploy     # needs AWS credentials; creates Lambda + DynamoDB + SSM + a $5 budget
+npm run synth      # CDK synthesizes offline with zero AWS credentials
 ```
 
-Hosting isn't required for judging (the repo runs locally with one command). We
-also provide a live link as our own choice. Infra is in `infra/stack.ts`
-(Lambda Function URL, provisioned DynamoDB, SSM-injected OAuth key, CloudWatch,
-a $5/month budget alert).
+- **CDK** synthesizes via `npm run synth` (passes offline). Stack in `infra/stack.ts`:
+  Lambda Function URL, provisioned DynamoDB, SSM-injected OAuth key, CloudWatch, a
+  $5/month budget alert.
+- **DynamoDB** — `DynamoStore` exists (set `TABLE_NAME` to switch FileStore → DynamoDB).
+- **Lambda** — the handler entry point exists.
+- **Amazon Bedrock** (live agent) and **Amazon Polly** (voice) are integrated in
+  code behind flags (`LIVE_AGENT`, voice toggle) and are **not run** by the demo.
+
+Nothing is deployed to AWS: no running Lambda, no live DynamoDB table, no Polly
+voice files. Hosting isn't required for judging — the repo runs locally with one
+command (`npm run demo`).
 
 Legal pages required by the Alexa+ add-on manifest are served at `/privacy` and
-`/terms`; `addon-manifest.example.json` documents the manifest shape within the
-documented limits (we cannot deploy an add-on for the hackathon).
+`/terms`; `addon-manifest.example.json` documents the manifest shape (we cannot
+deploy an add-on for the hackathon).
+
+### Built during the hackathon
+
+Both repositories were created during the hackathon. First commits (from
+`git log --reverse --format=%ad`):
+
+- **thread-alexa** — first commit **2026-10-08**
+- **[thread-core](https://github.com/learnermaker/thread-core)** — first commit **2026-10-08**
 
 ## Environment variables
 

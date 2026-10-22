@@ -2,7 +2,7 @@
 import { readFileSync } from "node:fs";
 import { serve } from "@hono/node-server";
 import { createThreadApp } from "thread-core";
-import { buildHttpApp } from "./app.ts";
+import { buildHttpApp, type WireEntry } from "./app.ts";
 import { anyOf, devResolver } from "./auth/principal.ts";
 import { jwtResolver, type OAuthConfig } from "./auth/oauth.ts";
 import { loadOrCreateKeys } from "./auth/keys.ts";
@@ -36,6 +36,7 @@ if (!(await store.load(seed.household.id))) {
 
 const watcher = createWatcher(core, seed.household.id, weather);
 const calls: Array<{ tool: string; ms: number; ok: boolean; code?: string }> = [];
+const wire: WireEntry[] = []; // raw JSON-RPC exchanges for the drawer
 
 const persons = seed.household.persons
   .filter((p: { has_account: boolean }) => p.has_account)
@@ -77,6 +78,7 @@ const app = buildHttpApp({
   simHtml,
   resolvePrincipal: devTokens ? anyOf(jwtResolver(oauth), devResolver(seed.household.id, persons.map((p: { id: string }) => p.id))) : jwtResolver(oauth),
   onCall: (e) => { calls.push(e); if (calls.length > 200) calls.splice(0, calls.length - 200); },
+  onWire: (e) => { wire.push(e); if (wire.length > 200) wire.splice(0, wire.length - 200); },
 });
 
 // --- Demo API routes (simulator-facing, no auth) ---
@@ -115,6 +117,7 @@ app.post("/api/reset", async (c) => {
   pharmacy.reset();
   weather.reset();
   calls.length = 0;
+  wire.length = 0;
   clock.set(DEMO_START);
   // Re-seed: clear store data dir and re-create
   const freshStore = fileStore(dataDir);
@@ -125,6 +128,7 @@ app.post("/api/reset", async (c) => {
 });
 
 app.get("/api/log", (c) => c.json(calls.slice(-50)));
+app.get("/api/wire", (c) => c.json(wire.slice(-40)));
 
 // --- Agent (scripted + optional Bedrock live), story and voice assets ---
 

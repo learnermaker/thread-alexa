@@ -7,7 +7,14 @@ import type { ResolvePrincipal } from "./auth/principal.ts";
 import { oauthRoutes, type OAuthConfig } from "./auth/oauth.ts";
 import { privacyHtml, termsHtml } from "./legal.ts";
 
+/** One raw JSON-RPC exchange on /mcp, for the simulator's "Under the hood" drawer. Never holds the bearer token. */
+export interface WireEntry {
+  at: string; request: string; rpc: string; tool?: string; status: number; ms: number;
+  as: string; via: string; req_text: string; res_text: string; res_bytes: number;
+}
+
 export interface AppDeps extends McpDeps {
+  onWire?: (e: WireEntry) => void; // when set, every /mcp exchange is reported (method, tool, status, ms, who, JSON bodies)
   resolvePrincipal: ResolvePrincipal;
   oauth?: OAuthConfig; // when set, the embedded authorization server is mounted
   simHtml?: () => Promise<string>; // when set, the simulator SPA is served at "/" and the Lens at "/lens"
@@ -29,11 +36,32 @@ export function buildHttpApp(deps: AppDeps): Hono {
     app.get("/", async (c) => c.html(await deps.simHtml!()));
     app.get("/lens", async (c) => c.html(await deps.lensHtml()));
   }
+  const wireAs = new WeakMap<Request, string>(); // who the bearer token resolved to, for the wire log
+  if (deps.onWire) {
+    const MAX = 12_000;
+    app.use("/mcp", async (c, next) => {
+      const started = performance.now();
+      const reqText = c.req.method === "POST" ? await c.req.raw.clone().text() : "";
+      await next();
+      const resText = await c.res.clone().text();
+      let rpc: { method?: string; params?: { name?: string } } = {};
+      try { rpc = JSON.parse(reqText) as typeof rpc; } catch { /* not JSON (e.g. GET) */ }
+      const auth = c.req.header("authorization") ?? "";
+      deps.onWire!({
+        at: new Date().toISOString(), request: `${c.req.method} /mcp`, rpc: rpc.method ?? "(no body)", tool: rpc.params?.name,
+        status: c.res.status, ms: Math.round(performance.now() - started),
+        as: wireAs.get(c.req.raw) ?? "no token",
+        via: !auth ? "no Authorization header" : /^Bearer dev-/.test(auth) ? "dev token" : "OAuth access token",
+        req_text: reqText.slice(0, MAX), res_text: resText.slice(0, MAX), res_bytes: resText.length,
+      });
+    });
+  }
   app.all("/mcp", async (c) => {
     if (new URL(c.req.url).searchParams.has("access_token")) return c.json({ error: "token_in_query_not_allowed" }, 400);
     const principal = await deps.resolvePrincipal(c.req.header("authorization"));
     // Alexa+ requirement: 401 WITHOUT a WWW-Authenticate header.
     if (!principal) return c.json({ error: "unauthorized" }, 401);
+    wireAs.set(c.req.raw, principal.kind === "person" ? principal.person_id : "service client");
     if (principal.kind === "service") {
       const body: unknown = c.req.method === "POST" ? await c.req.raw.clone().json().catch(() => undefined) : undefined;
       const methods = (Array.isArray(body) ? body : [body]).map((m) => (m as { method?: string } | undefined)?.method);

@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { LensHost } from "./lens-host.tsx";
 import {
-  callTool, getClock, getHousehold, getInbox, getLog, getStory, mcpHandshake, resetDemo,
+  callTool, getClock, getHousehold, getInbox, getLog, getStory, getWire, mcpHandshake, resetDemo,
   sendToAgent, setClock, signIn, speak as speakAudio, type Token,
 } from "./mcp.ts";
-import type { Beat, ClockState, Household, InboxItem, LensResult, LogEntry, Person, Turn } from "./types.ts";
+import type { Beat, ClockState, Household, InboxItem, LensResult, LogEntry, Person, Turn, WireEntry } from "./types.ts";
 
 interface DeviceState { token?: Token; person?: Person; transcript: Turn[] }
 
@@ -18,6 +18,10 @@ const MODE_FOR: Record<string, string> = {
   respond_to_handoff: "SECURED", confirm_action: "SECURED", get_thread: "DETAIL", record_evidence: "RESOLVED",
 };
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+// The inbox API returns { messages: [...] } (thread-core inbox); older shapes used items/handoffs.
+const inboxItems = (r: { items?: InboxItem[]; handoffs?: InboxItem[]; messages?: InboxItem[] }): InboxItem[] => r.items ?? r.handoffs ?? r.messages ?? [];
+// The wire log shows the JSON-RPC body exactly as sent / received, clipped to `max` characters.
+const clip = (text: string, max: number): string => (text.length > max ? `${text.slice(0, max)} …` : text);
 
 export function App() {
   const [hh, setHh] = useState<Household | null>(null);
@@ -26,7 +30,9 @@ export function App() {
   const [phone, setPhone] = useState<DeviceState>({ transcript: [] });
   const [lens, setLens] = useState<LensResult | undefined>();
   const [inbox, setInbox] = useState<InboxItem[]>([]);
+  const [answered, setAnswered] = useState<Record<string, string>>({});
   const [log, setLog] = useState<LogEntry[]>([]);
+  const [wire, setWire] = useState<WireEntry[]>([]);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [live, setLive] = useState(false);
   const [input, setInput] = useState("");
@@ -67,11 +73,11 @@ export function App() {
       if (samId.current) {
         try {
           const r = await getInbox(samId.current);
-          setInbox(r.items ?? r.handoffs ?? []);
+          setInbox(inboxItems(r));
         } catch { /* transient */ }
       }
       if (drawerOpen) {
-        try { setLog(await getLog()); } catch { /* transient */ }
+        try { setLog(await getLog()); setWire(await getWire()); } catch { /* transient */ }
       }
     }, 1000);
     return () => clearInterval(id);
@@ -136,7 +142,7 @@ export function App() {
           set((d) => ({ ...d, transcript: [...d.transcript, { who: "thread", text: beat.spoken_line }] }));
           speakAudio(beat.id, beat.spoken_line);
         }
-        if (samId.current) { try { setInbox((await getInbox(samId.current)).items ?? []); } catch { /* transient */ } }
+        if (samId.current) { try { setInbox(inboxItems(await getInbox(samId.current))); } catch { /* transient */ } }
         await sleep(perBeat);
       }
     } catch (e) {
@@ -152,9 +158,12 @@ export function App() {
     const handoffId = item.handoff_id ?? item.id;
     if (!token || !handoffId) return;
     try {
-      const res = await callTool(token, "respond_to_handoff", { handoff_id: handoffId, accept });
+      // Accepting also confirms the items the recipient is holding (e.g. "Items: jersey: with Sam").
+      const confirm_items = accept ? [...(item.text ?? "").matchAll(/Items: ([^:;]+): with/g)].map((m) => m[1]!.trim()) : [];
+      const res = await callTool(token, "respond_to_handoff", { handoff_id: handoffId, accept, ...(confirm_items.length ? { confirm_items } : {}) });
+      setAnswered((a) => ({ ...a, [handoffId]: accept ? "Accepted" : "Declined" }));
       if (res.structuredContent) setLens({ toolName: "respond_to_handoff", structuredContent: res.structuredContent });
-      if (samId.current) setInbox((await getInbox(samId.current)).items ?? []);
+      if (samId.current) setInbox(inboxItems(await getInbox(samId.current)));
     } catch (e) { setError(String(e)); }
   };
 
@@ -199,35 +208,58 @@ export function App() {
           <div className="device-title">Sam&apos;s phone — {phone.person?.name ?? "…"}</div>
           <div className="inbox">
             {inbox.length === 0 && <p className="empty">No handoffs yet.</p>}
-            {inbox.map((item) => (
-              <div key={item.handoff_id ?? item.id} className="inbox-item">
-                <div className="inbox-title">{item.thread_title ?? item.title ?? "Handoff"}</div>
-                {item.summary && <div className="inbox-sub">{item.summary}</div>}
-                <div className="inbox-actions">
-                  <button onClick={() => void respond(item, true)}>Accept</button>
-                  <button className="decline" onClick={() => void respond(item, false)}>Decline</button>
+            {inbox.slice().reverse().map((item) => {
+              const id = item.handoff_id ?? item.id ?? "";
+              const isHandoff = (item.kind ?? "HANDOFF_REQUEST") === "HANDOFF_REQUEST";
+              return (
+                <div key={id} className="inbox-item">
+                  <div className="inbox-title">{item.thread_title ?? item.title ?? (isHandoff ? "Handoff request" : "Heads-up")}</div>
+                  {(item.summary ?? item.text) && <div className="inbox-sub">{item.summary ?? item.text}</div>}
+                  {isHandoff && (answered[id] ? (
+                    <div className="inbox-sub">{answered[id]} ✓</div>
+                  ) : (
+                    <div className="inbox-actions">
+                      <button onClick={() => void respond(item, true)}>Accept</button>
+                      <button className="decline" onClick={() => void respond(item, false)}>Decline</button>
+                    </div>
+                  ))}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
       </main>
 
       {drawerOpen && (
         <aside className="drawer">
-          <div className="drawer-title">Under the hood — live MCP request log</div>
-          <table>
-            <thead><tr><th>tool</th><th>ms</th><th>status</th></tr></thead>
-            <tbody>
-              {log.slice().reverse().map((e, i) => (
-                <tr key={i} className={e.ok ? "ok" : "err"}>
-                  <td>{e.tool}</td><td>{e.ms}</td><td>{e.ok ? "ok" : e.code ?? "error"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="drawer-title">Under the hood — live MCP wire log (JSON-RPC over Streamable HTTP, protocol 2025-11-25)</div>
+          <div className="drawer-body">
+            <table>
+              <thead><tr><th>request</th><th>rpc</th><th>tool</th><th>status</th><th>ms</th><th>as</th></tr></thead>
+              <tbody>
+                {wire.slice().reverse().map((e, i) => (
+                  <tr key={e.at + i} className={e.status < 400 ? "ok" : "err"}>
+                    <td>{e.request}</td><td>{e.rpc}</td><td>{e.tool ?? ""}</td><td>{e.status}</td><td>{e.ms}</td><td>{e.as} ({e.via})</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {wire.length > 0 && (() => {
+              const last = wire[wire.length - 1]!;
+              return (
+                <div className="wire-detail" data-testid="wire-detail">
+                  <div className="wire-head">{last.request} · {last.rpc}{last.tool ? ` · ${last.tool}` : ""} · {last.status} · {last.ms} ms · {last.res_bytes} bytes</div>
+                  <div className="wire-label">request</div>
+                  <pre>{clip(last.req_text, 600)}</pre>
+                  <div className="wire-label">response</div>
+                  <pre>{clip(last.res_text, 700)}</pre>
+                </div>
+              );
+            })()}
+          </div>
         </aside>
       )}
     </div>
   );
 }
+

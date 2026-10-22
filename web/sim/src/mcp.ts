@@ -2,7 +2,7 @@
 // Each device holds its own token and signs in through the REAL embedded authorization
 // server (spec auth / Master Spec D12). DEMO auto-consent + login_hint make it one hop.
 
-import type { Beat, ClockState, Household, Inbox, LogEntry } from "./types.ts";
+import type { Beat, ClockState, Household, Inbox, LogEntry, WireEntry } from "./types.ts";
 
 const CLIENT_ID = "alexa-sim";
 // The demo client is confidential; this is the public demo secret (also the server default).
@@ -45,12 +45,12 @@ export async function signIn(loginHint: string): Promise<Token> {
     state,
   }).toString();
 
-  // Auto-consent redirects (302) straight to the callback carrying ?code=…; read it without following.
-  const res = await fetch(authorize, { redirect: "manual" });
-  const location = res.headers.get("location");
-  if (!location) throw new Error(`authorize did not redirect (status ${res.status})`);
-  const code = new URL(location, origin()).searchParams.get("code");
-  if (!code) throw new Error(`no code in callback: ${location}`);
+  // Auto-consent redirects (302) straight to the callback carrying ?code=…. Browsers hide the Location
+  // header of a manual redirect (opaque response), so follow it and read the code from the final URL.
+  const res = await fetch(authorize);
+  if (!res.redirected) throw new Error(`authorize did not redirect (status ${res.status})`);
+  const code = new URL(res.url).searchParams.get("code");
+  if (!code) throw new Error(`no code in callback: ${res.url}`);
 
   const tokenRes = await fetch(`${origin()}/oauth/token`, {
     method: "POST",
@@ -119,6 +119,7 @@ export const setClock = (body: { preset?: string; iso?: string }) =>
   api<ClockState>("/api/clock", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
 export const getInbox = (person: string) => api<Inbox>(`/api/inbox?person=${encodeURIComponent(person)}`);
 export const getLog = () => api<LogEntry[]>("/api/log");
+export const getWire = () => api<WireEntry[]>("/api/wire");
 export const resetDemo = () => api<{ ok?: boolean }>("/api/reset", { method: "POST" });
 
 export interface AgentReply { reply?: string; live?: boolean; lens?: { toolName: string; structuredContent: Record<string, unknown> } }

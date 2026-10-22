@@ -1,0 +1,25 @@
+<!doctype html><meta charset="utf-8"><title>close</title><link rel="stylesheet" href="base.css">
+<style>
+h1{position:absolute;left:0;right:0;top:200px;margin:0;text-align:center;font-size:150px;font-weight:800;letter-spacing:-.02em}
+h1 span{color:var(--accent)}
+.tag{position:absolute;left:0;right:0;top:400px;text-align:center;font-size:48px;color:var(--muted)}
+.cards{position:absolute;left:90px;right:90px;top:520px;display:flex;gap:40px}
+.card{flex:1;background:var(--panel);border:2px solid var(--line);border-radius:22px;padding:36px 40px;height:290px}
+.card h3{margin:0 0 12px;font-size:30px;color:var(--accent);letter-spacing:.08em;text-transform:uppercase}
+.card .big{font-size:33px;white-space:nowrap;font-weight:700;margin-bottom:10px}
+.card p{margin:0;font-size:32px;color:var(--muted)}
+.built{position:absolute;left:0;right:0;top:850px;text-align:center;font-size:46px}
+.honest{position:absolute;left:0;right:0;top:925px;text-align:center;font-size:30px;color:var(--muted)}
+</style>
+<div class="brand">THREAD<small>Don't lose the thread.</small></div>
+<h1 class="fade" id="a">Don't lose <span>the thread.</span></h1>
+<div class="tag fade" id="b">Alexa+ MCP server · MCP App · Agent Skill</div>
+<div class="cards">
+ <div class="card fade" id="c1"><h3>Product repo</h3><div class="big mono">github.com/learnermaker/thread-alexa</div><p>npm install · npm run demo · localhost:8787</p></div>
+ <div class="card fade" id="c2"><h3>Open-source engine</h3><div class="big mono">github.com/learnermaker/thread-core</div><p>Apache-2.0 · v0.1.0 release</p></div>
+</div>
+<div class="built fade" id="d">Built with Kiro · AWS CDK stack, deployment-ready.</div>
+<div class="honest fade" id="e">The Alexa+ experience, calendar, pharmacy and weather are simulated.</div>
+<script>
+window.step=n=>{const ids=[["a","b"],["c1","c2"],["d","e"]];ids.slice(0,n).flat().forEach((k,i)=>setTimeout(()=>document.getElementById(k).classList.add("show"),i*250))};
+</script>

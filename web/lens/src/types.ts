@@ -45,7 +45,7 @@ export interface RippleThread { thread_id?: string; title: string; severity: Sev
 export interface Proposal { recommended?: { id: string; name: string } }
 export interface ReportChangeResult { threads: RippleThread[]; proposals?: Proposal[] }
 
-export interface Candidate { id: string; name: string; eligible?: boolean; reason?: string; kind?: "person" | "service" }
+export interface Candidate { id: string; name: string; eligible?: boolean; reason?: string; reasons?: { text: string; ok: boolean }[]; kind?: "person" | "service" }
 export interface Receipt {
   recipient?: string;
   recipient_kind?: "person" | "service";
@@ -56,6 +56,7 @@ export interface Handoff { id: string; from: string; to: string; to_kind: "perso
 export interface RequestHandoffResult {
   handoff?: Handoff;
   candidates?: Candidate[];
+  receipt?: Receipt;
   thread?: Thread;
   requires_confirmation?: { confirmation_id: string; summary: string; amount?: number; amount_cents?: number };
 }
